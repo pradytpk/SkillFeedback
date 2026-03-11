@@ -51,3 +51,14 @@ export async function deleteSkill(id: string) {
   await prisma.skill.delete({ where: { id } });
   revalidatePath("/settings");
 }
+
+export async function setEmployeeCategories(employeeId: string, categoryIds: string[]) {
+  // Delete all existing assignments then insert the new set
+  await prisma.employeeSkillCategory.deleteMany({ where: { employeeId } });
+  if (categoryIds.length > 0) {
+    await prisma.employeeSkillCategory.createMany({
+      data: categoryIds.map((categoryId) => ({ employeeId, categoryId })),
+    });
+  }
+  revalidatePath(`/employees/${employeeId}/skills`);
+}
