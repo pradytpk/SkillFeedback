@@ -1,17 +1,18 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
-const SkillProgressChart = dynamic(
+const SkillProgressChart = nextDynamic(
   () => import("@/components/charts/SkillProgressChart"),
   { ssr: false }
 );
-const SkillRadarChart = dynamic(
+const SkillRadarChart = nextDynamic(
   () => import("@/components/charts/SkillRadarChart"),
   { ssr: false }
 );
-const MeetingFrequencyChart = dynamic(
+const MeetingFrequencyChart = nextDynamic(
   () => import("@/components/charts/MeetingFrequencyChart"),
   { ssr: false }
 );

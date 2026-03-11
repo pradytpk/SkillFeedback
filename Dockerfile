@@ -11,12 +11,14 @@ RUN npm ci
 # Copy full source
 COPY . .
 
+# Set DATABASE_URL before prisma steps (needed by prisma.config.ts)
+ENV DATABASE_URL="file:/app/data/dev.db"
+ENV NEXT_TELEMETRY_DISABLED=1
+
 # Generate Prisma client into src/generated/prisma/
 RUN npx prisma generate
 
 # Build Next.js (standalone mode → produces .next/standalone/server.js)
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="file:/app/data/dev.db"
 RUN npm run build
 
 # Copy static assets into the standalone bundle (required for standalone server)

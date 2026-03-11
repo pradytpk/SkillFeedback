@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import EmployeeCard from "@/components/employees/EmployeeCard";
 import AddEmployeeButton from "@/components/employees/AddEmployeeButton";
