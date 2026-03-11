@@ -1,0 +1,71 @@
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import SkillCell from "@/components/skills/SkillCell";
+
+export default async function SkillsPage({ params }: { params: { id: string } }) {
+  const employee = await prisma.employee.findUnique({ where: { id: params.id } });
+  if (!employee) notFound();
+
+  const categories = await prisma.skillCategory.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      skills: {
+        orderBy: { name: "asc" },
+        include: {
+          skillRatings: {
+            where: { employeeId: params.id },
+            orderBy: { ratedAt: "desc" },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Skill Matrix</h2>
+          <p className="text-sm text-gray-500">Click any skill to update the rating</p>
+        </div>
+      </div>
+
+      <div className="space-y-8">
+        {categories.map((category) => (
+          <div key={category.id}>
+            <div className="mb-3">
+              <h3 className="font-semibold text-gray-800">{category.name}</h3>
+              {category.description && (
+                <p className="text-xs text-gray-400">{category.description}</p>
+              )}
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+                {category.skills.map((skill) => {
+                  const latest = skill.skillRatings[0] ?? null;
+                  return (
+                    <div key={skill.id} className="p-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">{skill.name}</p>
+                      {skill.description && (
+                        <p className="text-xs text-gray-400 mb-3">{skill.description}</p>
+                      )}
+                      <SkillCell
+                        employeeId={params.id}
+                        skillId={skill.id}
+                        skillName={skill.name}
+                        categoryName={category.name}
+                        currentRating={latest?.rating ?? null}
+                        currentNotes={latest?.notes ?? null}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

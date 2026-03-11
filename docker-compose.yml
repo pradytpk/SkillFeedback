@@ -1,0 +1,19 @@
+services:
+  skillfeedback:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skillfeedback
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persists the SQLite database across container restarts
+      - skillfeedback-data:/app/data
+    environment:
+      - DATABASE_URL=file:/app/data/dev.db
+      - NODE_ENV=production
+    restart: unless-stopped
+
+volumes:
+  skillfeedback-data:
+    driver: local

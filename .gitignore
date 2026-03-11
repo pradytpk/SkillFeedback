@@ -25,8 +25,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# environment files — NEVER commit these (contain secrets / machine-specific paths)
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -34,3 +36,31 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor / IDE
+/.vscode
+/.idea
+*.swp
+*.swo
+
+# Claude Code (local AI session files)
+/.claude
+
+# Prisma generated client (rebuilt by `prisma generate` / `prisma migrate`)
+/src/generated/
+
+# SQLite database files (data is local, use `prisma db seed` to repopulate)
+**/*.db
+**/*.db-journal
+**/*.db-shm
+**/*.db-wal
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
