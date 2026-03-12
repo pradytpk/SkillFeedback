@@ -59,3 +59,11 @@ export const AVATAR_COLORS = [
 
 export const ACTION_ITEM_STATUSES = ["OPEN", "IN_PROGRESS", "DONE", "CANCELLED"] as const;
 export type ActionItemStatus = (typeof ACTION_ITEM_STATUSES)[number];
+
+export const RATING_NOTE_TEMPLATES = [
+  "Led this independently in a recent project",
+  "Demonstrated consistently across the quarter",
+  "Improving — needs occasional guidance",
+  "Early stage — requires significant support",
+  "Exceeded expectations — a clear strength",
+];

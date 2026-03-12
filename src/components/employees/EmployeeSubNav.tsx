@@ -9,6 +9,7 @@ export default function EmployeeSubNav({ employeeId }: { employeeId: string }) {
     { href: `/employees/${employeeId}/skills`, label: "Skills" },
     { href: `/employees/${employeeId}/meetings`, label: "Meetings" },
     { href: `/employees/${employeeId}/progress`, label: "Progress" },
+    { href: `/employees/${employeeId}/goals`, label: "Goals" },
   ];
 
   return (

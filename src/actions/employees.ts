@@ -44,3 +44,26 @@ export async function deleteEmployee(id: string) {
   await prisma.employee.delete({ where: { id } });
   revalidatePath("/employees");
 }
+
+const BulkRowSchema = z.object({
+  name: z.string().min(1, "Name required"),
+  role: z.string().min(1, "Role required"),
+  team: z.string().min(1, "Team required"),
+  startDate: z.string().min(1, "Start date required"),
+});
+
+export async function bulkCreateEmployees(rows: { name: string; role: string; team: string; startDate: string }[]) {
+  const COLORS = ["#6366f1","#8b5cf6","#ec4899","#ef4444","#f97316","#eab308","#22c55e","#14b8a6","#06b6d4","#3b82f6"];
+  const valid = rows.map((r, i) => ({ ...BulkRowSchema.parse(r), avatarColor: COLORS[i % COLORS.length] }));
+  let created = 0;
+  for (const r of valid) {
+    try {
+      await prisma.employee.create({ data: { ...r, startDate: new Date(r.startDate) } });
+      created++;
+    } catch {
+      // skip duplicates or other errors
+    }
+  }
+  revalidatePath("/employees");
+  return { created, skipped: valid.length - created };
+}

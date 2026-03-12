@@ -25,6 +25,7 @@ model Employee {
   meetings        Meeting[]
   skillCategories EmployeeSkillCategory[]
   yearNotes       YearNote[]
+  goals           Goal[]
 }
 
 model Team {
@@ -63,8 +64,9 @@ model Skill {
   isBuiltIn   Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  category     SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  skillRatings SkillRating[]
+  category       SkillCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  skillRatings   SkillRating[]
+  roleBenchmarks RoleBenchmark[]
 
   @@unique([name, categoryId])
 }
@@ -120,4 +122,36 @@ model YearNote {
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, yearLabel])
+}
+
+model RoleBenchmark {
+  id           String @id @default(cuid())
+  role         String
+  skillId      String
+  targetRating Int
+
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([role, skillId])
+}
+
+model MeetingTemplate {
+  id            String   @id @default(cuid())
+  title         String   @unique
+  notesTemplate String?
+  createdAt     DateTime @default(now())
+}
+
+model Goal {
+  id          String    @id @default(cuid())
+  employeeId  String
+  title       String
+  description String?
+  targetDate  DateTime?
+  status      String    @default("ACTIVE")
+  category    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }

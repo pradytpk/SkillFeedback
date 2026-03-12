@@ -78,3 +78,14 @@ export async function deleteActionItem(id: string, employeeId: string) {
   await prisma.actionItem.delete({ where: { id } });
   revalidatePath(`/employees/${employeeId}/meetings`);
 }
+
+export async function createMeetingTemplate(title: string, notesTemplate: string) {
+  if (!title.trim()) throw new Error("Title is required");
+  await prisma.meetingTemplate.create({ data: { title: title.trim(), notesTemplate: notesTemplate.trim() || null } });
+  revalidatePath("/settings");
+}
+
+export async function deleteMeetingTemplate(id: string) {
+  await prisma.meetingTemplate.delete({ where: { id } });
+  revalidatePath("/settings");
+}

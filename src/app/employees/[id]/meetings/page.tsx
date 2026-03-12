@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import YearSection from "@/components/meetings/YearSection";
+import AddMeetingButton from "@/components/meetings/AddMeetingButton";
 import { CalendarDays } from "lucide-react";
 
 // Fiscal year: April–March. Apr 2024 – Mar 2025 = "2024-25"
@@ -23,6 +24,8 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
     orderBy: { meetingDate: "desc" },
     include: { actionItems: { orderBy: { createdAt: "asc" } } },
   });
+
+  const templates = await prisma.meetingTemplate.findMany({ orderBy: { title: "asc" } });
 
   const yearNotes = await prisma.yearNote.findMany({
     where: { employeeId: params.id },
@@ -66,6 +69,7 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
             {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} · April–March fiscal year
           </p>
         </div>
+        <AddMeetingButton employeeId={params.id} templates={templates} />
       </div>
 
       {meetings.length === 0 ? (
@@ -84,6 +88,7 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
               meetings={serialize(grouped.get(year)!)}
               initialNotes={yearNotesMap[year] ?? ""}
               defaultOpen={year === currentFY}
+              templates={templates}
             />
           ))}
         </div>

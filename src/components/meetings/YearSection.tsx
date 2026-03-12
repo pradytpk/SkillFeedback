@@ -25,15 +25,18 @@ interface Meeting {
   actionItems: ActionItem[];
 }
 
+interface Template { id: string; title: string; notesTemplate: string | null; }
+
 interface Props {
   employeeId: string;
   yearLabel: string;        // e.g. "2024-25"
   meetings: Meeting[];
   initialNotes: string;
   defaultOpen?: boolean;
+  templates?: Template[];
 }
 
-export default function YearSection({ employeeId, yearLabel, meetings, initialNotes, defaultOpen }: Props) {
+export default function YearSection({ employeeId, yearLabel, meetings, initialNotes, defaultOpen, templates = [] }: Props) {
   const [open, setOpen] = useState(defaultOpen ?? false);
   const [notes, setNotes] = useState(initialNotes);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -120,7 +123,7 @@ export default function YearSection({ employeeId, yearLabel, meetings, initialNo
           <div className="px-5 py-4">
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm font-medium text-gray-600">1:1 Meetings</p>
-              <AddMeetingButton employeeId={employeeId} />
+              <AddMeetingButton employeeId={employeeId} templates={templates} />
             </div>
             {meetings.length === 0 ? (
               <p className="text-sm text-gray-400 italic py-3 text-center">No meetings in this fiscal year.</p>

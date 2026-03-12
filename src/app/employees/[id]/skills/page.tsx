@@ -18,6 +18,10 @@ export default async function SkillsPage({ params }: { params: { id: string } })
     })
   ).map((r) => r.categoryId);
 
+  // Benchmarks for this employee's role
+  const benchmarks = await prisma.roleBenchmark.findMany({ where: { role: employee.role } });
+  const benchmarkMap = Object.fromEntries(benchmarks.map((b) => [b.skillId, b.targetRating]));
+
   const categories = await prisma.skillCategory.findMany({
     where: { id: { in: assignedIds } },
     orderBy: { name: "asc" },
@@ -82,6 +86,7 @@ export default async function SkillsPage({ params }: { params: { id: string } })
                           categoryName={category.name}
                           currentRating={latest?.rating ?? null}
                           currentNotes={latest?.notes ?? null}
+                          targetRating={benchmarkMap[skill.id] ?? null}
                         />
                       </div>
                     );

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import RatingDots from "@/components/ui/RatingDots";
 import RatingModal from "./RatingModal";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, CheckCircle2 } from "lucide-react";
 
 interface SkillCellProps {
   employeeId: string;
@@ -11,12 +11,16 @@ interface SkillCellProps {
   categoryName: string;
   currentRating: number | null;
   currentNotes: string | null;
+  targetRating?: number | null;
 }
 
 export default function SkillCell({
-  employeeId, skillId, skillName, categoryName, currentRating, currentNotes,
+  employeeId, skillId, skillName, categoryName, currentRating, currentNotes, targetRating,
 }: SkillCellProps) {
   const [open, setOpen] = useState(false);
+
+  const delta = targetRating && currentRating ? currentRating - targetRating : null;
+  const meetsTarget = delta !== null && delta >= 0;
 
   return (
     <>
@@ -25,7 +29,17 @@ export default function SkillCell({
         className="w-full text-left hover:bg-orange-50 rounded-lg p-2 transition-colors group"
         title={`Click to rate ${skillName}`}
       >
-        <RatingDots value={currentRating} readonly />
+        <div className="flex items-center justify-between mb-1">
+          <RatingDots value={currentRating} readonly />
+          {targetRating && (
+            meetsTarget
+              ? <span title={`Meets target (${targetRating})`}><CheckCircle2 className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /></span>
+              : <span className="text-xs font-bold text-red-500 flex-shrink-0" title={`Target: ${targetRating}, gap: ${delta}`}>{delta}</span>
+          )}
+        </div>
+        {targetRating && !currentRating && (
+          <p className="text-xs text-gray-300 mt-0.5">Target: {targetRating}</p>
+        )}
         {currentNotes && (
           <div className="mt-1.5 flex items-start gap-1">
             <MessageSquare className="w-3 h-3 text-gray-300 mt-0.5 flex-shrink-0" />

@@ -4,7 +4,9 @@ import Button from "@/components/ui/Button";
 import MeetingForm from "./MeetingForm";
 import { Plus } from "lucide-react";
 
-export default function AddMeetingButton({ employeeId }: { employeeId: string }) {
+interface Template { id: string; title: string; notesTemplate: string | null; }
+
+export default function AddMeetingButton({ employeeId, templates = [] }: { employeeId: string; templates?: Template[] }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -12,7 +14,7 @@ export default function AddMeetingButton({ employeeId }: { employeeId: string })
         <Plus className="w-4 h-4 mr-1.5" />
         Log Meeting
       </Button>
-      <MeetingForm open={open} onClose={() => setOpen(false)} employeeId={employeeId} />
+      <MeetingForm open={open} onClose={() => setOpen(false)} employeeId={employeeId} templates={templates} />
     </>
   );
 }

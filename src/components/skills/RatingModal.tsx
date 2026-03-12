@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import Textarea from "@/components/ui/Textarea";
 import RatingDots from "@/components/ui/RatingDots";
 import { addRating } from "@/actions/ratings";
-import { RATING_LABELS } from "@/lib/constants";
+import { RATING_LABELS, RATING_NOTE_TEMPLATES } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 
 interface RatingModalProps {
@@ -58,14 +58,31 @@ export default function RatingModal({
         )}
       </div>
 
-      <Textarea
-        label="Notes (optional)"
-        id="notes"
-        placeholder="e.g. Demonstrated strong system design in Q4 project..."
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        rows={3}
-      />
+      <div className="mb-1">
+        <Textarea
+          label="Notes (optional)"
+          id="notes"
+          placeholder="e.g. Demonstrated strong system design in Q4 project..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+        />
+        <div className="mt-2">
+          <p className="text-xs text-gray-400 mb-1.5">Quick fill:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {RATING_NOTE_TEMPLATES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setNotes(t)}
+                className="text-xs bg-gray-100 hover:bg-orange-100 hover:text-orange-700 text-gray-600 px-2.5 py-1 rounded-full transition-colors"
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="flex justify-end gap-2 mt-4">
         <Button variant="secondary" onClick={onClose}>

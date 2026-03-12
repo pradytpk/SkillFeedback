@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import AddEmployeeButton from "@/components/employees/AddEmployeeButton";
+import BulkImportButton from "@/components/employees/BulkImportButton";
 import EmployeeListClient from "@/components/employees/EmployeeListClient";
 
 export default async function EmployeesPage() {
@@ -32,7 +33,10 @@ export default async function EmployeesPage() {
             {employees.length} {employees.length === 1 ? "member" : "members"}
           </p>
         </div>
-        <AddEmployeeButton teams={teamNames} />
+        <div className="flex gap-2">
+          <BulkImportButton />
+          <AddEmployeeButton teams={teamNames} />
+        </div>
       </div>
       <EmployeeListClient employees={serialized} teams={teamNames} />
     </div>
