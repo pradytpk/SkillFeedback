@@ -102,7 +102,7 @@ export default function ManageCategoriesButton({ employeeId, allCategories, assi
                   type="checkbox"
                   checked={selected.has(cat.id)}
                   onChange={() => toggle(cat.id)}
-                  className="mt-0.5 accent-indigo-600"
+                  className="mt-0.5 accent-orange-600"
                 />
                 <div>
                   <p className="text-sm font-medium text-gray-800">{cat.name}</p>
@@ -134,7 +134,7 @@ export default function ManageCategoriesButton({ employeeId, allCategories, assi
             <button
               onClick={handleSave}
               disabled={pending}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50"
             >
               {pending ? "Saving…" : "Save"}
             </button>

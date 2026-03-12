@@ -16,7 +16,7 @@ export default function Sidebar() {
     <aside className="w-60 bg-gray-900 text-white flex flex-col min-h-screen">
       <div className="px-4 py-5 border-b border-gray-800">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-indigo-400" />
+          <BarChart3 className="w-6 h-6 text-orange-400" />
           <span className="font-bold text-lg tracking-tight">SkillTracker</span>
         </div>
         <p className="text-xs text-gray-400 mt-0.5">1:1 Feedback Manager</p>
@@ -29,7 +29,7 @@ export default function Sidebar() {
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
               pathname.startsWith(href)
-                ? "bg-indigo-600 text-white"
+                ? "bg-orange-600 text-white"
                 : "text-gray-400 hover:bg-gray-800 hover:text-white"
             )}
           >

@@ -1,9 +1,18 @@
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import MeetingCard from "@/components/meetings/MeetingCard";
-import AddMeetingButton from "@/components/meetings/AddMeetingButton";
+import YearSection from "@/components/meetings/YearSection";
 import { CalendarDays } from "lucide-react";
+
+// Fiscal year: April–March. Apr 2024 – Mar 2025 = "2024-25"
+function getFiscalYear(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const month = d.getMonth(); // 0 = Jan
+  const year = d.getFullYear();
+  return month >= 3
+    ? `${year}-${String(year + 1).slice(2)}`
+    : `${year - 1}-${String(year).slice(2)}`;
+}
 
 export default async function MeetingsPage({ params }: { params: { id: string } }) {
   const employee = await prisma.employee.findUnique({ where: { id: params.id } });
@@ -12,32 +21,51 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
   const meetings = await prisma.meeting.findMany({
     where: { employeeId: params.id },
     orderBy: { meetingDate: "desc" },
-    include: {
-      actionItems: { orderBy: { createdAt: "asc" } },
-    },
+    include: { actionItems: { orderBy: { createdAt: "asc" } } },
   });
 
-  const serialized = meetings.map((m) => ({
-    ...m,
-    meetingDate: m.meetingDate.toISOString(),
-    createdAt: m.createdAt.toISOString(),
-    updatedAt: m.updatedAt.toISOString(),
-    actionItems: m.actionItems.map((a) => ({
-      ...a,
-      dueDate: a.dueDate ? a.dueDate.toISOString() : null,
-      createdAt: a.createdAt.toISOString(),
-      updatedAt: a.updatedAt.toISOString(),
-    })),
-  }));
+  const yearNotes = await prisma.yearNote.findMany({
+    where: { employeeId: params.id },
+  });
+  const yearNotesMap = Object.fromEntries(yearNotes.map((n) => [n.yearLabel, n.notes ?? ""]));
+
+  // Group by fiscal year
+  const grouped = new Map<string, typeof meetings>();
+  for (const m of meetings) {
+    const fy = getFiscalYear(m.meetingDate);
+    if (!grouped.has(fy)) grouped.set(fy, []);
+    grouped.get(fy)!.push(m);
+  }
+
+  // Sort years descending (most recent first)
+  const sortedYears = Array.from(grouped.keys()).sort((a, b) => b.localeCompare(a));
+
+  // Current fiscal year (to open by default)
+  const currentFY = getFiscalYear(new Date());
+
+  const serialize = (ms: typeof meetings) =>
+    ms.map((m) => ({
+      ...m,
+      meetingDate: m.meetingDate.toISOString(),
+      createdAt: m.createdAt.toISOString(),
+      updatedAt: m.updatedAt.toISOString(),
+      actionItems: m.actionItems.map((a) => ({
+        ...a,
+        dueDate: a.dueDate ? a.dueDate.toISOString() : null,
+        createdAt: a.createdAt.toISOString(),
+        updatedAt: a.updatedAt.toISOString(),
+      })),
+    }));
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">1:1 Meetings</h2>
-          <p className="text-sm text-gray-500">{meetings.length} meeting{meetings.length !== 1 ? "s" : ""} logged</p>
+          <p className="text-sm text-gray-500">
+            {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} · April–March fiscal year
+          </p>
         </div>
-        <AddMeetingButton employeeId={params.id} />
       </div>
 
       {meetings.length === 0 ? (
@@ -48,8 +76,15 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
         </div>
       ) : (
         <div className="space-y-4">
-          {serialized.map((meeting) => (
-            <MeetingCard key={meeting.id} meeting={meeting} employeeId={params.id} />
+          {sortedYears.map((year) => (
+            <YearSection
+              key={year}
+              employeeId={params.id}
+              yearLabel={year}
+              meetings={serialize(grouped.get(year)!)}
+              initialNotes={yearNotesMap[year] ?? ""}
+              defaultOpen={year === currentFY}
+            />
           ))}
         </div>
       )}

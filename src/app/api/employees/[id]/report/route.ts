@@ -4,11 +4,17 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import EmployeeReportPDF, { type ReportData } from "@/components/pdf/EmployeeReportPDF";
 import React from "react";
 
+function getFiscalYear(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const month = d.getMonth();
+  const year = d.getFullYear();
+  return month >= 3 ? `${year}-${String(year + 1).slice(2)}` : `${year - 1}-${String(year).slice(2)}`;
+}
+
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const employee = await prisma.employee.findUnique({ where: { id: params.id } });
   if (!employee) return new Response("Not found", { status: 404 });
 
-  // Assigned categories with skills + latest rating per skill
   const assignedIds = (
     await prisma.employeeSkillCategory.findMany({
       where: { employeeId: params.id },
@@ -33,18 +39,29 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     },
   });
 
-  // All meetings with action items (most recent first)
+  // Year notes (sorted descending)
+  const rawYearNotes = await prisma.yearNote.findMany({
+    where: { employeeId: params.id },
+    orderBy: { yearLabel: "desc" },
+  });
+
+  // Meeting count per fiscal year
   const rawMeetings = await prisma.meeting.findMany({
     where: { employeeId: params.id },
-    orderBy: { meetingDate: "desc" },
-    include: { actionItems: { orderBy: { createdAt: "asc" } } },
+    select: { meetingDate: true },
   });
+  const meetingCountByYear: Record<string, number> = {};
+  for (const m of rawMeetings) {
+    const fy = getFiscalYear(m.meetingDate);
+    meetingCountByYear[fy] = (meetingCountByYear[fy] ?? 0) + 1;
+  }
 
   const data: ReportData = {
     employee: {
       name: employee.name,
       role: employee.role,
       team: employee.team,
+      
       startDate: employee.startDate.toISOString(),
     },
     categories: rawCategories.map((cat) => ({
@@ -56,16 +73,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
         latestRating: s.skillRatings[0]?.rating ?? null,
       })),
     })),
-    meetings: rawMeetings.map((m) => ({
-      id: m.id,
-      meetingDate: m.meetingDate.toISOString(),
-      notes: m.notes,
-      feedback: m.feedback,
-      actionItems: m.actionItems.map((a) => ({
-        id: a.id,
-        description: a.description,
-        status: a.status,
-      })),
+    yearNotes: rawYearNotes.map((n) => ({
+      yearLabel: n.yearLabel,
+      notes: n.notes ?? "",
+      meetingCount: meetingCountByYear[n.yearLabel] ?? 0,
     })),
     generatedAt: new Date().toISOString(),
   };

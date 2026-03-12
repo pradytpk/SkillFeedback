@@ -18,8 +18,6 @@ export default async function SkillsPage({ params }: { params: { id: string } })
     })
   ).map((r) => r.categoryId);
 
-  const assignedSet = new Set(assignedIds);
-
   const categories = await prisma.skillCategory.findMany({
     where: { id: { in: assignedIds } },
     orderBy: { name: "asc" },

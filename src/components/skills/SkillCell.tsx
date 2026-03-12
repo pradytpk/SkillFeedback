@@ -2,6 +2,7 @@
 import { useState } from "react";
 import RatingDots from "@/components/ui/RatingDots";
 import RatingModal from "./RatingModal";
+import { MessageSquare } from "lucide-react";
 
 interface SkillCellProps {
   employeeId: string;
@@ -13,12 +14,7 @@ interface SkillCellProps {
 }
 
 export default function SkillCell({
-  employeeId,
-  skillId,
-  skillName,
-  categoryName,
-  currentRating,
-  currentNotes,
+  employeeId, skillId, skillName, categoryName, currentRating, currentNotes,
 }: SkillCellProps) {
   const [open, setOpen] = useState(false);
 
@@ -26,10 +22,16 @@ export default function SkillCell({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full text-left hover:bg-indigo-50 rounded-lg p-2 transition-colors group"
+        className="w-full text-left hover:bg-orange-50 rounded-lg p-2 transition-colors group"
         title={`Click to rate ${skillName}`}
       >
         <RatingDots value={currentRating} readonly />
+        {currentNotes && (
+          <div className="mt-1.5 flex items-start gap-1">
+            <MessageSquare className="w-3 h-3 text-gray-300 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-gray-400 line-clamp-2">{currentNotes}</p>
+          </div>
+        )}
       </button>
       <RatingModal
         open={open}

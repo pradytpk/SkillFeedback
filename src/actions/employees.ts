@@ -9,7 +9,7 @@ const EmployeeSchema = z.object({
   role: z.string().min(1, "Role is required"),
   team: z.string().min(1, "Team is required"),
   startDate: z.string().min(1, "Start date is required"),
-  avatarColor: z.string().default("#6366f1"),
+  avatarColor: z.string().default("#ea580c"),
 });
 
 export async function createEmployee(formData: FormData) {
@@ -18,16 +18,9 @@ export async function createEmployee(formData: FormData) {
     role: formData.get("role"),
     team: formData.get("team"),
     startDate: formData.get("startDate"),
-    avatarColor: formData.get("avatarColor") || "#6366f1",
+    avatarColor: formData.get("avatarColor") || "#ea580c",
   });
-
-  await prisma.employee.create({
-    data: {
-      ...data,
-      startDate: new Date(data.startDate),
-    },
-  });
-
+  await prisma.employee.create({ data: { ...data, startDate: new Date(data.startDate) } });
   revalidatePath("/employees");
 }
 
@@ -37,17 +30,12 @@ export async function updateEmployee(id: string, formData: FormData) {
     role: formData.get("role"),
     team: formData.get("team"),
     startDate: formData.get("startDate"),
-    avatarColor: formData.get("avatarColor") || "#6366f1",
+    avatarColor: formData.get("avatarColor") || "#ea580c",
   });
-
   await prisma.employee.update({
     where: { id },
-    data: {
-      ...data,
-      startDate: new Date(data.startDate),
-    },
+    data: { ...data, startDate: new Date(data.startDate) },
   });
-
   revalidatePath("/employees");
   revalidatePath(`/employees/${id}`);
 }

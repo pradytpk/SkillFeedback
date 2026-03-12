@@ -62,3 +62,16 @@ export async function setEmployeeCategories(employeeId: string, categoryIds: str
   }
   revalidatePath(`/employees/${employeeId}/skills`);
 }
+
+export async function createTeam(name: string) {
+  if (!name.trim()) throw new Error("Team name is required");
+  await prisma.team.create({ data: { name: name.trim() } });
+  revalidatePath("/settings");
+  revalidatePath("/employees");
+}
+
+export async function deleteTeam(id: string) {
+  await prisma.team.delete({ where: { id } });
+  revalidatePath("/settings");
+  revalidatePath("/employees");
+}

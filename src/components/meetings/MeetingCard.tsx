@@ -48,7 +48,7 @@ export default function MeetingCard({
         <div className="px-5 py-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+              <Calendar className="w-4 h-4 text-orange-500 flex-shrink-0" />
               <div>
                 <p className="font-semibold text-gray-900">{formatDate(meeting.meetingDate)}</p>
                 <p className="text-xs text-gray-400">{formatDateRelative(meeting.meetingDate)}</p>
@@ -73,8 +73,8 @@ export default function MeetingCard({
           </div>
 
           {meeting.feedback && (
-            <div className="mt-3 bg-indigo-50 rounded-lg px-3 py-2">
-              <p className="text-xs font-semibold text-indigo-700 mb-1">Feedback</p>
+            <div className="mt-3 bg-orange-50 rounded-lg px-3 py-2">
+              <p className="text-xs font-semibold text-orange-700 mb-1">Feedback</p>
               <p className="text-sm text-gray-700">{meeting.feedback}</p>
             </div>
           )}

@@ -17,13 +17,20 @@ model Employee {
   role        String
   team        String
   startDate   DateTime
-  avatarColor String   @default("#6366f1")
+  avatarColor String   @default("#ea580c")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   skillRatings    SkillRating[]
   meetings        Meeting[]
   skillCategories EmployeeSkillCategory[]
+  yearNotes       YearNote[]
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
 }
 
 model SkillCategory {
@@ -100,4 +107,17 @@ model ActionItem {
   updatedAt   DateTime  @updatedAt
 
   meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model YearNote {
+  id         String   @id @default(cuid())
+  employeeId String
+  yearLabel  String   // e.g. "2024-25" (Apr 2024 – Mar 2025)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, yearLabel])
 }

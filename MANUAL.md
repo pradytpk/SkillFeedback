@@ -4,108 +4,110 @@
 
 1. [Overview](#overview)
 2. [Getting Started](#getting-started)
-3. [Managing Employees](#managing-employees)
+3. [Team Members](#team-members)
 4. [Skill Matrix](#skill-matrix)
 5. [1:1 Meetings](#11-meetings)
-6. [Action Items](#action-items)
-7. [Progress Charts](#progress-charts)
-8. [Skills Settings](#skills-settings)
-9. [Tips & Best Practices](#tips--best-practices)
+6. [Annual Notes](#annual-notes)
+7. [Action Items](#action-items)
+8. [Progress Charts](#progress-charts)
+9. [Settings](#settings)
+10. [Downloading a PDF Report](#downloading-a-pdf-report)
+11. [Tips & Best Practices](#tips--best-practices)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Overview
 
-SkillTracker is a tool for managers to track their team members' skills and 1-on-1 meeting feedback in one place. It helps you:
+SkillTracker is a tool for managers to track team skills and 1-on-1 meeting feedback in one place. It helps you:
 
-- See where each person stands across key skill areas
-- Track skill growth over time
-- Keep a running log of your 1:1 meetings, notes, and follow-up action items
-- Spot trends with visual progress charts
+- See each person's current skill levels across key areas
+- Track skill growth over time with history charts
+- Log 1:1 meetings organised by fiscal year (April–March)
+- Write annual overall notes per year for use in performance reviews
+- Download a professional PDF report to share with HR or senior management
 
-The app is designed for a single manager — no login or multi-user setup required.
+The app is for a single manager — no login required.
 
 ---
 
 ## Getting Started
 
-### Starting the App
-
-Open a terminal in the project folder and run:
+### Local / Dev
 
 ```bash
 npm run dev
 ```
 
-Then open your browser and go to **http://localhost:3000**.
+Open **http://localhost:3000**.
 
-You'll land on the **Team Members** page. This is your home base.
+### Docker
 
----
+```bash
+docker compose up --build
+```
 
-## Managing Employees
-
-### Viewing Your Team
-
-The home page shows all your team members as cards. Each card displays:
-
-- **Name, role, and team**
-- **Number of skill ratings** logged
-- **Number of 1:1 meetings** logged
-- **Last 1:1 date** (e.g. "3 days ago")
-- **Start date**
-
-Click any card to open that person's detail view.
+Open **http://localhost:3000**. The database sets up automatically on first run.
 
 ---
+
+## Team Members
+
+### The List View
+
+The home page shows all team members in a table with:
+- **Name, role** and start date
+- **Team** badge
+- **Skill Ratings** count
+- **Last 1:1** — relative date of the most recent meeting
+- Edit and delete buttons (appear on hover)
+
+### Searching
+
+Type in the search bar to filter by **name** or **team** in real time.
 
 ### Adding a Team Member
 
-1. Click **Add Employee** (top right of the home page)
-2. Fill in the form:
-   - **Name** — full name
-   - **Role** — job title (e.g. "Senior Engineer")
-   - **Team** — team or department (e.g. "Platform")
-   - **Start Date** — when they joined the team
-   - **Avatar Color** — pick a color for their initials avatar
-3. Click **Add Employee** to save
+1. Click **Add Member** (top right)
+2. Fill in:
+   - **Full Name**
+   - **Role / Title** (e.g. "Senior Engineer")
+   - **Team** — dropdown populated from Settings → Teams
+   - **Start Date**
+   - **Avatar Color** — color for their initials circle
+3. Click **Add Member**
 
----
+> If the Team dropdown is empty, go to **Settings → Teams** and add teams first.
 
 ### Editing a Team Member
 
-1. Hover over an employee card — edit and delete buttons appear in the top-right corner
-2. Click the **pencil icon** to open the edit form
-3. Make your changes and click **Save Changes**
-
----
+Hover over any row and click the **pencil icon** → make changes → **Save Changes**.
 
 ### Deleting a Team Member
 
-1. Hover over an employee card and click the **trash icon**
-2. Confirm the deletion in the dialog
+Hover over a row → click the **trash icon** → confirm.
 
-> **Warning:** Deleting an employee permanently removes all their skill ratings, meetings, and action items. This cannot be undone.
+> **Warning:** Deletes all their skill ratings, meetings, and action items permanently.
+
+### Back Navigation
+
+Inside any employee's page, click **← Team Members** at the top to return to the list.
 
 ---
 
 ## Skill Matrix
 
-The **Skills** tab shows a full matrix of skill categories and ratings for an employee.
-
-### Navigation
-
-From the employee list, click a card to go to their Skills page. You can also use the **Skills | Meetings | Progress** tabs at the top of any employee's page.
+Navigate to an employee → **Skills** tab.
 
 ### Reading the Matrix
 
-Skills are grouped by category (Technical, Communication, Leadership, Delivery). Each skill shows:
+Skills are grouped by assigned category. Each skill shows:
+- **Colored dots** for the current rating (1–5)
+- **Rating label** (e.g. "Proficient")
+- **Notes** from the last rating (shown in small text below the dots, if any)
+- No dots = not yet rated
 
-- **Colored dots** representing the current rating (1–5)
-- **Rating label** next to the dots (e.g. "Proficient")
-- **No dots** if the skill hasn't been rated yet
-
-| Rating | Label | Dot Color |
+| Rating | Label | Color |
 |---|---|---|
 | 1 | Beginner | Red |
 | 2 | Developing | Orange |
@@ -115,224 +117,223 @@ Skills are grouped by category (Technical, Communication, Leadership, Delivery).
 
 ### Rating a Skill
 
-1. Click on any skill cell — it highlights in blue on hover
-2. A dialog opens showing the skill name and current rating
-3. Click the dots to select a rating (1–5)
-4. Optionally add **notes** — e.g. "Demonstrated in Q4 infrastructure project"
-5. Click **Save Rating**
+1. Click any skill cell (it highlights on hover)
+2. Select a rating 1–5 using the dots
+3. Optionally add **notes** — context for the rating (e.g. "Led the DB migration independently")
+4. Click **Save Rating**
 
-The rating is saved immediately and the matrix updates.
+Every save creates a **new history record** — previous ratings are never deleted.
 
-> **Note:** Every time you save a rating, a new record is created. Previous ratings are preserved for the Progress chart — you never lose history.
+### Assigning Skill Categories to an Employee
 
-### Rating Again Later
-
-You can re-rate any skill at any time. The new rating becomes the "current" rating shown in the matrix, while the old rating is kept in history and shown in the Progress chart.
+By default an employee has no categories. Click **Manage Categories** to tick which skill categories apply to them. Each employee can have a different set.
 
 ---
 
 ## 1:1 Meetings
 
-The **Meetings** tab shows a chronological log of all 1:1 sessions with an employee.
+Navigate to an employee → **Meetings** tab.
+
+### Fiscal Year View
+
+Meetings are grouped by **fiscal year (April–March)**:
+- **FY 2024-25** = April 2024 – March 2025
+- **FY 2025-26** = April 2025 – March 2026
+
+Each year appears as a collapsible section. The **current fiscal year opens by default**.
+
+**New years appear automatically** — when you log a meeting dated in a new fiscal year period, a new year section is created with no manual setup.
 
 ### Logging a Meeting
 
-1. Go to an employee's **Meetings** tab
-2. Click **Log Meeting**
-3. Fill in the form:
-   - **Meeting Date** — defaults to today
-   - **Notes** — what was discussed (agenda, topics, context)
-   - **Feedback** — key feedback you gave to this person
-4. Click **Log Meeting** to save
-
-The meeting appears at the top of the list (most recent first).
+1. Click **Log Meeting** inside any year section (or the button at the top)
+2. Fill in:
+   - **Meeting Date** (defaults to today)
+   - **Notes** — discussion topics, context
+   - **Feedback** — key message to the employee
+3. Click **Log Meeting**
 
 ### Viewing a Meeting
 
-Each meeting card shows:
+Each meeting card shows the date and feedback at a glance. Click the **chevron ▾** to expand and see full notes and action items.
 
-- **Date** and relative time (e.g. "5 days ago")
-- **Feedback** — shown in a highlighted block for quick scanning
-- **Open action item count** — shown as an amber badge if any are open
+### Editing / Deleting a Meeting
 
-Click the **chevron (▾)** on the right to expand the card and see:
-- Full **notes**
-- All **action items**
+Hover over a meeting card → **pencil** to edit, **trash** to delete.
 
-### Editing a Meeting
+> Deleting a meeting also removes all its action items.
 
-1. Hover over a meeting card and click the **pencil icon**
-2. Update the date, notes, or feedback
-3. Click **Save Changes**
+---
 
-### Deleting a Meeting
+## Annual Notes
 
-1. Hover over a meeting card and click the **trash icon**
-2. Confirm the deletion
+Inside each fiscal year section there is an **Annual Overall Notes** panel (orange background).
 
-> **Warning:** Deleting a meeting also deletes all its action items.
+This is for your **overall comments about the year** — a summary for use in performance reviews or the PDF export.
+
+### Adding / Editing Annual Notes
+
+Click anywhere in the notes area → a text box appears → type your notes → click **Save Notes**.
+
+The notes are saved per fiscal year per employee. You can edit them at any time.
+
+> These are the only meeting-related notes included in the PDF export. Individual 1:1 meeting notes are not in the export.
 
 ---
 
 ## Action Items
 
-Action items are tasks or follow-ups captured within a meeting.
+Action items are follow-up tasks captured within a meeting.
 
 ### Adding an Action Item
 
-1. Expand a meeting card (click the chevron)
-2. Click **+ Add** next to "Action Items"
-3. Type the description and press **Enter** or click **Add**
+1. Expand a meeting card (click ▾)
+2. Click **+ Add** in the Action Items section
+3. Type a description → press **Enter** or click **Add**
 
 ### Updating Status
 
-Each action item has a status button on the left. Click it to cycle through:
+Click the status badge to cycle through:
 
 ```
-OPEN  →  IN PROGRESS  →  DONE  →  OPEN  →  ...
+OPEN  →  IN PROGRESS  →  DONE  →  (back to OPEN)
 ```
-
-The status updates instantly (optimistic update — no page reload needed).
 
 | Status | Meaning |
 |---|---|
-| Open | Not yet started |
+| Open | Not started |
 | In Progress | Being worked on |
 | Done | Completed |
 | Cancelled | No longer needed |
 
+The update is instant (no page reload).
+
 ### Deleting an Action Item
 
-Hover over an action item row — a trash icon appears on the right. Click it to delete.
+Hover over the item → click the **trash icon**.
 
 ### Tracking Open Items
 
-The meeting card header shows an amber badge with the count of Open + In Progress items. This lets you quickly see which meetings have unresolved follow-ups without expanding them.
+The meeting card header shows an **amber badge** with the count of Open + In Progress items so you can spot unresolved follow-ups at a glance.
 
 ---
 
 ## Progress Charts
 
-The **Progress** tab shows three charts that visualize an employee's skill growth and meeting patterns over time.
+Navigate to an employee → **Progress** tab.
 
 ### Skill Snapshot (Radar Chart)
 
-A spider/radar chart showing the **current average rating per skill category**. Each axis represents one category (Technical, Communication, Leadership, Delivery). The shaded area shows the employee's current position.
-
-- A larger, rounder shape = stronger overall skill profile
-- Lopsided shape = stronger in some areas than others
+Spider chart showing the **current average rating per skill category**. A larger, fuller shape = stronger overall profile.
 
 ### Skill Ratings Over Time (Line Chart)
 
-A line chart showing how each skill has been rated over time.
-
-- Each line represents one skill
-- X-axis = date of rating
-- Y-axis = rating (1–5)
-- Hover over a point to see the skill name, rating, and label (e.g. "4 — Advanced")
-
-Use this chart to see if a skill is improving, plateauing, or declining.
+One line per skill, plotted by rating date. Shows whether a skill is improving, plateauing, or declining. Hover a point to see exact values.
 
 ### Meeting Frequency (Bar Chart)
 
-A bar chart showing how many 1:1 meetings were logged per month.
+Meetings logged per month. Useful for spotting gaps in your 1:1 cadence.
 
-- Useful for spotting gaps — e.g. months with no meetings
-- Hover a bar to see the exact count
-
-> **Note:** All charts require at least one rating or meeting to display data. Empty states show a placeholder message.
+> Charts require at least one data point to render.
 
 ---
 
-## Skills Settings
+## Settings
 
-The **Skills Settings** page (accessible from the sidebar) lets you manage the skill categories and skills used in the matrix.
+Click **Settings** in the left sidebar.
 
-### Viewing Categories and Skills
+### Skill Categories Tab
 
-- The **left panel** lists all skill categories with a skill count
-- Click a category to see its skills in the **right panel**
-- Categories and skills marked with a **lock icon (🔒)** are built-in and cannot be deleted
+Manage the skill categories and skills used in every employee's matrix.
 
-### Adding a Custom Category
+**Add a category:** Click **+** at the top of the left panel → type a name → Enter or **Add**
 
-1. Click the **+** icon at the top of the left panel
-2. Type a category name and press **Enter** or click **Add**
+**Add a skill:** Select a category → click **+ Add Skill** → type a name → Enter or **Add**
 
-The new category appears in the list immediately and is available in every employee's skill matrix.
+**Delete:** Hover over any non-locked item → click the **trash icon** → confirm
 
-### Adding a Custom Skill
+> Items marked with a **lock icon 🔒** are built-in (seeded) and cannot be deleted.
+>
+> Deleting a category also deletes all its skills and any ratings employees have for them.
 
-1. Select the category you want to add a skill to
-2. Click **+ Add Skill** in the right panel
-3. Type the skill name and press **Enter** or click **Add**
+### Teams Tab
 
-### Deleting a Custom Category
+Manage the list of teams available in the Add/Edit Member form.
 
-1. Hover over a custom (non-locked) category
-2. Click the **trash icon** that appears
-3. Confirm the deletion
+**Add a team:** Click **+** → type a name → Enter or **Add**
 
-> **Warning:** Deleting a category also deletes all its skills and any ratings employees have for those skills.
+**Delete a team:** Hover over a team → click **trash icon** → confirm
 
-### Deleting a Custom Skill
+> Deleting a team only removes it from the dropdown — existing employees keep their team name.
 
-1. Select the category containing the skill
-2. Hover over the custom (non-locked) skill
-3. Click the **trash icon**
+---
+
+## Downloading a PDF Report
+
+On any employee's page, click **Download Report** (top right).
+
+The PDF includes:
+
+**Page 1 — Skill Report**
+- Employee name, role, team, and start date
+- **Skill Overview by Category** — horizontal bar chart showing average rating per category with a color legend
+- **Skill Matrix** — every skill with a colored bar indicator and label (e.g. "4/5 Advanced")
+
+**Page 2 — Annual Review Notes**
+- One card per fiscal year showing:
+  - Fiscal year label (e.g. "FY 2024-25")
+  - Number of 1:1 meetings held that year
+  - The annual overall notes you wrote for that year
+
+> Individual 1:1 meeting notes and action items are **not** included in the export — only the annual overall notes.
 
 ---
 
 ## Tips & Best Practices
 
-**Rate skills regularly, not just during reviews**
-The progress chart is most useful when you have multiple data points over time. Consider rating skills after each significant project or quarter, not only at annual review time.
+**Rate skills regularly, not just at review time**
+The Progress chart is most useful with multiple data points over time. Rate after each significant project or at the end of each quarter.
 
-**Use the Notes field in ratings**
-When saving a rating, adding a short note (e.g. "Led the database migration independently") gives you concrete evidence when writing performance reviews later.
+**Use the Notes field when rating**
+Adding context like "Led the infrastructure migration" gives you concrete evidence when writing performance reviews later.
 
 **Log meetings right after they happen**
-The sooner you log notes and feedback after a 1:1, the more accurate and useful they'll be. The app defaults the meeting date to today to make this quick.
+The app defaults the date to today. Fresh notes are more accurate and useful.
 
-**Use action items consistently**
-Capturing action items in the tool (rather than a separate doc) means they show up on the meeting card and you can track completion across sessions. Check open items at the start of each 1:1.
+**Use action items to track follow-ups**
+Capturing follow-ups here means you see open items on the meeting card and can check them at the start of the next 1:1.
 
-**Use feedback as a summary, not a transcript**
-The **Feedback** field (highlighted on the meeting card) is for your key message to the employee — the one thing they should remember from the conversation. Notes can hold the full discussion detail.
+**Write annual notes before the year closes**
+The Annual Notes section in each fiscal year section is your place to summarise the year. Write it while the details are fresh — it feeds directly into the PDF export.
+
+**The Feedback field is for your key message**
+Keep it to the one thing the employee should remember from the meeting. Use Notes for the full discussion detail.
 
 **Add custom skills for your team's context**
-The built-in skills cover common areas, but you can add custom categories and skills for things specific to your team (e.g. "Infrastructure", "On-call Readiness", "Customer Empathy").
-
----
-
-## Keyboard Shortcuts
-
-| Context | Key | Action |
-|---|---|---|
-| Action item input | Enter | Save the action item |
-| Category/skill input | Enter | Save the category or skill |
-| Any modal | Esc | Close the modal |
+The built-in skills cover common areas. Add custom categories like "On-call Readiness", "Infrastructure", or "Customer Empathy" for what matters to your specific team.
 
 ---
 
 ## Troubleshooting
 
-**The app shows a database error on startup**
+**Team dropdown is empty when adding a member**
+Go to Settings → Teams tab and add your teams first.
 
-Make sure the `DATABASE_URL` in the `.env` file uses an absolute path:
+**The app shows a database error**
+Ensure `DATABASE_URL` in `.env` uses an absolute path:
 ```
 DATABASE_URL="file:/absolute/path/to/prisma/dev.db"
 ```
-Then restart the dev server.
+Restart the dev server after changing it.
 
-**I accidentally deleted an employee / meeting**
+**I accidentally deleted data**
+There is no undo. The data is permanently removed. Back up `prisma/dev.db` regularly if this matters.
 
-There is no undo. The data is permanently removed from the SQLite database. For important data, consider periodically backing up the `prisma/dev.db` file.
+**Charts are blank**
+Charts require data to render. Make sure the employee has skill ratings (for the radar/progress chart) or meetings logged (for the frequency chart). If data exists, try refreshing the page.
 
-**Charts are empty even though I have data**
-
-Charts load asynchronously after the page renders. If they're blank, wait a moment and check that ratings/meetings exist for the employee. Try refreshing the page.
+**A new fiscal year isn't showing**
+Fiscal year sections appear automatically when a meeting is logged with a date in that year's range (April–March). Log a meeting with the correct date and the section will appear.
 
 **The app won't start**
-
-Run `npm install` in the project folder to ensure all dependencies are installed, then try `npm run dev` again.
+Run `npm install` to ensure dependencies are installed, then `npm run dev`.

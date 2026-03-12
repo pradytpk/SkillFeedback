@@ -1,18 +1,20 @@
 # SkillTracker — Skill Sheet & 1:1 Feedback Manager
 
-A web application for managers to track their team's skills and 1-on-1 meeting feedback. Features a skill matrix with historical ratings, meeting logs with action items, and progress charts.
+A web application for managers to track their team's skills and 1-on-1 meeting feedback. Features a skill matrix with historical ratings, meeting logs grouped by fiscal year, annual review notes, and progress charts.
 
 ---
 
 ## Features
 
-- **Employee Profiles** — Create and manage team members with name, role, team, start date, and a color-coded avatar
-- **Skill Matrix** — Rate employees across 16 built-in skills in 4 categories (Technical, Communication, Leadership, Delivery); add custom categories and skills
+- **Team Members List** — Searchable list view with name, role, team, skill rating count, and last 1:1 date
+- **Skill Matrix** — Rate employees across built-in skills in 4 categories (Technical, Communication, Leadership, Delivery); add custom categories and skills; notes shown under each rating
 - **Rating History** — Every rating creates a new record (never overwritten), enabling full historical tracking
-- **1:1 Meeting Log** — Log meetings with notes, qualitative feedback, and action items per session
-- **Action Items** — Track action items per meeting with status cycling (Open → In Progress → Done → Cancelled)
-- **Progress Charts** — Radar chart (current skill snapshot by category), line chart (skill ratings over time), bar chart (meeting frequency by month)
-- **Skills Settings** — Add/delete custom skill categories and skills; built-in items are protected from deletion
+- **1:1 Meeting Log** — Meetings grouped by fiscal year (April–March); expand/collapse each year
+- **Annual Notes** — Add overall yearly comments per fiscal year; included in PDF export
+- **Action Items** — Track follow-ups per meeting with status cycling (Open → In Progress → Done → Cancelled)
+- **Progress Charts** — Radar chart (skill snapshot by category), line chart (ratings over time), bar chart (meeting frequency)
+- **PDF Export** — Download a professional report with skill charts, skill matrix with bar indicators, and annual review notes (no individual meeting details)
+- **Settings** — Manage skill categories/skills and teams independently; built-in skills are protected from deletion
 
 ---
 
@@ -26,7 +28,7 @@ A web application for managers to track their team's skills and 1-on-1 meeting f
 | ORM | Prisma 6 |
 | Database | SQLite (file-based, no server needed) |
 | Charts | Recharts 3 |
-| UI Primitives | Radix UI (Dialog, Select, Tooltip) |
+| PDF Generation | @react-pdf/renderer |
 | Icons | Lucide React |
 | Forms | React Hook Form + Zod |
 | Date utilities | date-fns |
@@ -37,71 +39,71 @@ A web application for managers to track their team's skills and 1-on-1 meeting f
 
 ```
 src/
-├── app/                          # Next.js App Router pages
-│   ├── page.tsx                  # Redirects → /employees
+├── app/
+│   ├── page.tsx                        # Redirects → /employees
 │   ├── employees/
-│   │   ├── page.tsx              # Employee list (Server Component)
+│   │   ├── page.tsx                    # Team Members list (Server Component)
 │   │   └── [id]/
-│   │       ├── layout.tsx        # Employee header + sub-nav (Skills | Meetings | Progress)
-│   │       ├── skills/page.tsx   # Skill matrix for employee
-│   │       ├── meetings/page.tsx # Meeting log for employee
-│   │       └── progress/page.tsx # Charts page
-│   ├── settings/page.tsx         # Manage skill categories and skills
-│   └── api/
-│       └── employees/[id]/
-│           ├── ratings/route.ts          # GET rating history (for charts)
-│           └── meetings-stats/route.ts   # GET meeting frequency by month
+│   │       ├── layout.tsx              # Employee header + back button + sub-nav
+│   │       ├── skills/page.tsx         # Skill matrix
+│   │       ├── meetings/page.tsx       # Meetings grouped by fiscal year
+│   │       └── progress/page.tsx       # Progress charts
+│   ├── settings/page.tsx               # Skill Categories + Teams settings
+│   └── api/employees/[id]/
+│       ├── ratings/route.ts            # GET rating history (for charts)
+│       ├── meetings-stats/route.ts     # GET meeting frequency by month
+│       └── report/route.ts             # GET PDF report
 │
-├── actions/                      # Next.js Server Actions (all DB writes)
-│   ├── employees.ts              # createEmployee, updateEmployee, deleteEmployee
-│   ├── skills.ts                 # createCategory, deleteCategory, createSkill, deleteSkill
-│   ├── ratings.ts                # addRating (always inserts a new row)
-│   └── meetings.ts               # createMeeting, updateMeeting, deleteMeeting,
-│                                 #   createActionItem, updateActionItemStatus, deleteActionItem
+├── actions/
+│   ├── employees.ts                    # createEmployee, updateEmployee, deleteEmployee
+│   ├── skills.ts                       # createCategory, deleteCategory, createSkill,
+│   │                                   #   deleteSkill, createTeam, deleteTeam
+│   ├── ratings.ts                      # addRating (always inserts a new row)
+│   ├── meetings.ts                     # createMeeting, updateMeeting, deleteMeeting,
+│   │                                   #   createActionItem, updateActionItemStatus, deleteActionItem
+│   └── yearNotes.ts                    # upsertYearNote
 │
 ├── components/
-│   ├── ui/                       # Primitive components
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Textarea.tsx
-│   │   ├── Modal.tsx             # Radix Dialog wrapper
-│   │   ├── Avatar.tsx            # Initials + color avatar
-│   │   ├── Badge.tsx
-│   │   └── RatingDots.tsx        # Interactive 1–5 dot rating selector
+│   ├── ui/                             # Button, Input, Textarea, Modal, Avatar, Badge, RatingDots
 │   ├── layout/
-│   │   └── Sidebar.tsx           # App sidebar navigation
+│   │   └── Sidebar.tsx
 │   ├── employees/
-│   │   ├── EmployeeCard.tsx      # Card with stats and edit/delete
-│   │   ├── EmployeeForm.tsx      # Create/edit modal form
+│   │   ├── EmployeeListClient.tsx      # Search + list rendering (client)
+│   │   ├── EmployeeForm.tsx            # Create/edit modal (team dropdown from DB)
 │   │   ├── AddEmployeeButton.tsx
-│   │   ├── EmployeeSubNav.tsx    # Skills | Meetings | Progress tabs
+│   │   └── EmployeeSubNav.tsx          # Skills | Meetings | Progress tabs
 │   ├── skills/
-│   │   ├── SkillCell.tsx         # Clickable cell that opens rating modal
-│   │   ├── RatingModal.tsx       # Modal to set rating + notes
-│   │   └── SettingsClient.tsx    # Category + skill manager (client)
+│   │   ├── SkillCell.tsx               # Clickable cell showing rating dots + notes
+│   │   ├── RatingModal.tsx             # Modal to set rating + notes
+│   │   ├── ManageCategoriesButton.tsx  # Assign categories to an employee
+│   │   └── SettingsClient.tsx          # Skill Categories + Teams tabs (client)
 │   ├── meetings/
-│   │   ├── MeetingCard.tsx       # Expandable meeting card
-│   │   ├── MeetingForm.tsx       # Create/edit meeting modal
+│   │   ├── YearSection.tsx             # Collapsible fiscal year section with annual notes
+│   │   ├── MeetingCard.tsx             # Expandable meeting card
+│   │   ├── MeetingForm.tsx             # Create/edit meeting modal
 │   │   ├── AddMeetingButton.tsx
-│   │   └── ActionItemList.tsx    # Inline action items with optimistic status toggle
-│   └── charts/
-│       ├── SkillProgressChart.tsx    # Line chart: rating over time per skill
-│       ├── SkillRadarChart.tsx       # Radar chart: avg rating per category
-│       └── MeetingFrequencyChart.tsx # Bar chart: meetings per month
+│   │   └── ActionItemList.tsx          # Inline action items with optimistic status toggle
+│   ├── charts/
+│   │   ├── SkillProgressChart.tsx      # Line chart: rating over time
+│   │   ├── SkillRadarChart.tsx         # Radar chart: avg rating per category
+│   │   └── MeetingFrequencyChart.tsx   # Bar chart: meetings per month
+│   └── pdf/
+│       └── EmployeeReportPDF.tsx       # PDF layout (react-pdf)
 │
 ├── lib/
-│   ├── prisma.ts                 # Singleton PrismaClient
-│   ├── utils.ts                  # cn(), formatDate(), getInitials(), etc.
-│   └── constants.ts              # RATING_LABELS, RATING_COLORS, AVATAR_COLORS, etc.
+│   ├── prisma.ts                       # Singleton PrismaClient
+│   ├── utils.ts                        # cn(), formatDate(), getInitials(), etc.
+│   ├── constants.ts                    # RATING_LABELS, RATING_COLORS, AVATAR_COLORS
+│   └── options.ts                      # TEAMS fallback list (not used — teams managed in DB)
 │
 └── generated/
-    └── prisma/                   # Prisma-generated client (do not edit)
+    └── prisma/                         # Prisma-generated client (do not edit)
 
 prisma/
-├── schema.prisma                 # Data model
-├── seed.ts                       # Seeds 4 categories + 16 built-in skills
-├── migrations/                   # SQL migration history
-└── dev.db                        # SQLite database file
+├── schema.prisma
+├── seed.ts                             # Seeds 4 categories + 16 built-in skills
+├── migrations/
+└── dev.db                              # SQLite database file
 ```
 
 ---
@@ -109,17 +111,21 @@ prisma/
 ## Data Model
 
 ```prisma
-Employee         — id, name, role, team, startDate, avatarColor
-SkillCategory    — id, name, description, isBuiltIn
-Skill            — id, name, description, categoryId, isBuiltIn
-SkillRating      — id, employeeId, skillId, rating (1–5), notes, ratedAt
-Meeting          — id, employeeId, meetingDate, notes, feedback
-ActionItem       — id, meetingId, description, status, dueDate
+Employee              — id, name, role, team, startDate, avatarColor
+Team                  — id, name  (managed in Settings)
+SkillCategory         — id, name, description, isBuiltIn
+Skill                 — id, name, description, categoryId, isBuiltIn
+SkillRating           — id, employeeId, skillId, rating (1–5), notes, ratedAt
+Meeting               — id, employeeId, meetingDate, notes, feedback
+ActionItem            — id, meetingId, description, status, dueDate
+YearNote              — id, employeeId, yearLabel ("2024-25"), notes
 ```
 
 **Key design decisions:**
-- `SkillRating` is append-only — each rating change inserts a new row. Latest rating = most recent `ratedAt`. This enables the skill progress chart without a separate audit table.
-- `isBuiltIn = true` on categories/skills protects seed data from deletion via the UI.
+- `SkillRating` is append-only — each save inserts a new row. Latest rating = most recent `ratedAt`. Enables full history without a separate audit table.
+- `isBuiltIn = true` protects seed categories/skills from deletion.
+- `Team` is a standalone DB model managed in Settings — not a static list.
+- `YearNote` uses an April–March fiscal year label (e.g. `"2024-25"`) with a unique constraint on `(employeeId, yearLabel)`.
 - `ActionItem.status` is a string (`OPEN` | `IN_PROGRESS` | `DONE` | `CANCELLED`) — SQLite has no native enum.
 
 ---
@@ -156,27 +162,20 @@ ActionItem       — id, meetingId, description, status, dueDate
 ### Setup
 
 ```bash
-# Install dependencies
 npm install
-
-# Set up the database (creates prisma/dev.db and seeds built-in skills)
 npx prisma migrate dev --name init
-
-# Start the development server
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Environment Variables
-
-The `.env` file must contain an absolute path to the SQLite database:
+### Environment Variables (`.env`)
 
 ```env
 DATABASE_URL="file:/absolute/path/to/prisma/dev.db"
 ```
 
-> **Note:** A relative path like `file:./prisma/dev.db` can fail at runtime because Next.js resolves it from an internal working directory, not the project root. Use an absolute path.
+> Use an absolute path. Relative paths can fail at Next.js runtime.
 
 ---
 
@@ -185,44 +184,30 @@ DATABASE_URL="file:/absolute/path/to/prisma/dev.db"
 ### Prerequisites
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
 
-### Quick Start
-
-```bash
-# Build and start the container
-docker compose up --build
-
-# Open http://localhost:3000 in your browser
-```
-
-That's it. The database is created, migrated, and seeded automatically on first run.
-
-### Subsequent Starts
-
-```bash
-# Start (no rebuild needed unless code changed)
-docker compose up
-
-# Stop
-docker compose down
-
-# Stop and delete the database volume (resets all data)
-docker compose down -v
-```
-
-### Rebuilding After Code Changes
+### First Run
 
 ```bash
 docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000). The database is created, migrated, and seeded automatically.
+
+### Day-to-Day
+
+```bash
+docker compose up        # start
+docker compose down      # stop (data is preserved)
+docker compose down -v   # stop + delete all data
+docker compose up --build  # rebuild after code changes
 ```
 
 ### Data Persistence
 
-The SQLite database is stored in a Docker **named volume** (`skillfeedback-data`). Your data survives container restarts and `docker compose down`. It is only deleted with `docker compose down -v`.
+SQLite is stored in a Docker named volume (`skillfeedback-data`). Data survives restarts. Only `docker compose down -v` wipes it.
 
-### Backing Up the Database
+### Backup
 
 ```bash
-# Copy the database out of the volume to your local machine
 docker run --rm \
   -v skillfeedback-data:/data \
   -v $(pwd):/backup \
@@ -231,13 +216,12 @@ docker run --rm \
 
 On **Windows PowerShell**, replace `$(pwd)` with `${PWD}`.
 
-### Running on a Different Port
+### Different Port
 
-Edit `docker-compose.yml` and change the port mapping:
-
+Edit `docker-compose.yml`:
 ```yaml
 ports:
-  - "8080:3000"   # App will be at http://localhost:8080
+  - "8080:3000"
 ```
 
 ---
@@ -245,23 +229,12 @@ ports:
 ## Common Commands
 
 ```bash
-# Development server
-npm run dev
-
-# Production build
-npm run build
-
-# Open Prisma Studio (visual DB browser)
-npx prisma studio
-
-# Re-seed the database (idempotent — safe to run multiple times)
-npx prisma db seed
-
-# Apply schema changes
-npx prisma migrate dev --name <migration-name>
-
-# Regenerate Prisma client after schema changes
-npx prisma generate
+npm run dev                                        # Dev server
+npm run build                                      # Production build
+npx prisma studio                                  # Visual DB browser
+npx prisma db seed                                 # Re-seed (idempotent)
+npx prisma migrate dev --name <name>               # Apply schema changes
+npx prisma generate                                # Regenerate Prisma client
 ```
 
 ---
@@ -269,24 +242,28 @@ npx prisma generate
 ## Architecture Notes
 
 ### Server vs Client Components
-- **Server Components** (data fetching): all `page.tsx` files, outer layout shells
-- **Client Components** (`"use client"`): all forms, modals, chart wrappers, interactive cells, sidebar
-- Mutations go through **Server Actions** (`src/actions/`) which call `revalidatePath()` to refresh server data
+- **Server Components**: all `page.tsx` files — fetch data, pass to client components
+- **Client Components** (`"use client"`): forms, modals, chart wrappers, interactive cells, search, sidebar
+- Mutations use **Server Actions** (`src/actions/`) with `revalidatePath()` for cache invalidation
 
 ### Charts
-All Recharts components are loaded with `dynamic(() => import(...), { ssr: false })` to prevent SSR hydration mismatches, since Recharts requires the browser DOM.
+All Recharts components use `dynamic(() => import(...), { ssr: false })` to avoid SSR hydration errors (Recharts requires browser DOM).
 
-### Prisma Client
-The singleton pattern in `src/lib/prisma.ts` prevents connection pool exhaustion during Next.js dev hot-reloads:
+### Fiscal Year Logic
+`getFiscalYear(date)` in `meetings/page.tsx` maps any date to an April–March fiscal year string:
+- April 2024 → March 2025 = `"2024-25"`
+- January 2025 → `"2024-25"` (still in same FY)
+- April 2025 → `"2025-26"`
 
-```ts
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-```
+New year sections appear automatically when a meeting with a date in a new fiscal year is logged.
+
+### PDF Report
+Generated server-side using `@react-pdf/renderer` in the API route `/api/employees/[id]/report`.
+- Page 1: Skill overview horizontal bar chart + skill matrix with SVG rating bars
+- Page 2: Annual Review Notes per fiscal year (individual meeting notes excluded)
 
 ### Prisma 6 Notes
-- Client generates to `src/generated/prisma/client` (not the default `@prisma/client`)
+- Client generates to `src/generated/prisma/client` (not default `@prisma/client`)
 - Import: `import { PrismaClient } from "@/generated/prisma/client"`
-- Config is in `prisma.config.ts` (not just `schema.prisma`)
-- Seed uses `tsx` (not `ts-node`) due to ESM compatibility with the generated client
+- Config in `prisma.config.ts`
+- Seed uses `tsx` (not `ts-node`) for ESM compatibility
