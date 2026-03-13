@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Textarea from "@/components/ui/Textarea";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import { createMeeting, updateMeeting } from "@/actions/meetings";
 import { formatInputDate } from "@/lib/utils";
 
@@ -55,6 +55,7 @@ export default function MeetingForm({ open, onClose, employeeId, meeting, templa
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(meeting?.notes || "");
+  const [feedback, setFeedback] = useState(meeting?.feedback || "");
   const [moodScore, setMoodScore] = useState<number | null>(meeting?.moodScore ?? null);
   const [qualityFlag, setQualityFlag] = useState<string>(meeting?.qualityFlag ?? "");
 
@@ -63,6 +64,7 @@ export default function MeetingForm({ open, onClose, employeeId, meeting, templa
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     formData.set("notes", notes);
+    formData.set("feedback", feedback);
     if (moodScore !== null) formData.set("moodScore", String(moodScore));
     formData.set("qualityFlag", qualityFlag);
     try {
@@ -168,23 +170,20 @@ export default function MeetingForm({ open, onClose, employeeId, meeting, templa
               </select>
             </div>
           )}
-          <Textarea
+          <MarkdownEditor
             label="Notes"
-            name="notes"
-            id="notes"
-            placeholder="What was discussed?"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={setNotes}
+            placeholder="What was discussed?"
             rows={4}
           />
         </div>
 
-        <Textarea
+        <MarkdownEditor
           label="Feedback"
-          name="feedback"
-          id="feedback"
+          value={feedback}
+          onChange={setFeedback}
           placeholder="Key feedback for this employee..."
-          defaultValue={meeting?.feedback || ""}
           rows={3}
         />
         <div className="flex justify-end gap-2 pt-2">

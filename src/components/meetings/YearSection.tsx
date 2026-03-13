@@ -5,6 +5,8 @@ import { upsertYearNote } from "@/actions/yearNotes";
 import MeetingCard from "./MeetingCard";
 import Button from "@/components/ui/Button";
 import AddMeetingButton from "./AddMeetingButton";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
+import ReactMarkdown from "react-markdown";
 
 interface ActionItem {
   id: string;
@@ -93,7 +95,7 @@ export default function YearSection({ employeeId, yearLabel, meetings, initialNo
               <div className="flex items-center gap-2">
                 <NotebookPen className="w-4 h-4 text-orange-500" />
                 <span className="text-sm font-semibold text-gray-700">Annual Overall Notes</span>
-                <span className="text-xs text-gray-400">(Included in PDF export)</span>
+                <span className="text-xs text-gray-400">(FY summary notes)</span>
               </div>
               {saved && (
                 <span className="flex items-center gap-1 text-xs text-green-600">
@@ -103,12 +105,11 @@ export default function YearSection({ employeeId, yearLabel, meetings, initialNo
             </div>
             {editingNotes ? (
               <div>
-                <textarea
+                <MarkdownEditor
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={setNotes}
                   placeholder="Add overall comments for this fiscal year..."
                   rows={3}
-                  className="w-full border border-orange-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white resize-none"
                 />
                 <div className="flex gap-2 mt-2">
                   <Button size="sm" onClick={handleSaveNotes} disabled={pending}>
@@ -125,7 +126,7 @@ export default function YearSection({ employeeId, yearLabel, meetings, initialNo
                 className="min-h-[40px] text-sm text-gray-600 cursor-pointer rounded-lg px-3 py-2 hover:bg-orange-100/60 transition-colors"
               >
                 {notes
-                  ? <p className="whitespace-pre-wrap">{notes}</p>
+                  ? <div className="prose prose-sm max-w-none [&>p]:mb-1 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:pl-4 [&>ol>li]:list-decimal"><ReactMarkdown>{notes}</ReactMarkdown></div>
                   : <p className="text-gray-400 italic">Click to add annual notes for FY {yearLabel}...</p>}
               </div>
             )}

@@ -7,6 +7,7 @@ import { deleteGoal, cycleGoalStatus, updateGoalProgress } from "@/actions/goals
 import GoalForm from "./GoalForm";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 const STATUS_STYLES: Record<string, string> = {
   ACTIVE: "bg-blue-100 text-blue-700",
@@ -146,7 +147,9 @@ export default function GoalCard({
               </p>
 
               {goal.description && (
-                <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
+                <div className="text-sm text-gray-500 mt-1 prose prose-sm max-w-none [&>p]:mb-0.5 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:pl-4 [&>ol>li]:list-decimal">
+                  <ReactMarkdown>{goal.description}</ReactMarkdown>
+                </div>
               )}
 
               {/* Progress bar */}

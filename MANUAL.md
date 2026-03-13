@@ -18,8 +18,9 @@
 14. [Progress Charts](#progress-charts)
 15. [Settings](#settings)
 16. [PDF Reports](#pdf-reports)
-17. [Tips & Best Practices](#tips--best-practices)
-18. [Troubleshooting](#troubleshooting)
+17. [Markdown Formatting](#markdown-formatting)
+18. [Tips & Best Practices](#tips--best-practices)
+19. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -216,11 +217,11 @@ Hover over a meeting card → **pencil** to edit, **trash** to delete.
 
 Each fiscal year section has an **Annual Overall Notes** panel (orange background) for your year-end summary.
 
-- Click the notes area to open an edit box
-- Type your overall assessment for the year
+- Click the notes area to open an edit box with **Edit** and **Preview** tabs
+- Write your overall assessment using plain text or markdown formatting
 - Click **Save Notes**
 
-Annual notes are included in the **PDF export** (individual meeting notes are not).
+> Annual notes support markdown — use bullet lists (`-`), bold (`**text**`), and headings (`#`) to structure your summary.
 
 ---
 
@@ -456,18 +457,45 @@ Two report types are available, both downloaded from the employee header.
 Click **Skill Report** on any employee's page.
 
 - **Page 1** — Skill overview bar chart per category + full skill matrix with inline rating bars
-- **Page 2** — Annual review notes per fiscal year (individual meeting notes not included)
 
 ### Appraisal Report
 
 Click **Appraisal Report** on any employee's page.
 
-- **Page 1** — Skill overview chart + full skill matrix
+- **Page 1** — Appraisal records: overall rating (S/A/B/C/D) with rating scale legend, 9-box placement, achievements, strengths, development areas, dev plan, peer feedback
 - **Page 2** — All goals grouped by fiscal year, with status and progress bars
-- **Page 3** — Appraisal records (rating, 9-box placement, achievements, strengths, dev areas, dev plan, peer feedback)
-- **Page 4** — Annual review notes per fiscal year
+- **Page 3** — Skill overview chart + full skill matrix
 
 > The appraisal report is most useful after completing the Appraisal tab for the employee.
+
+---
+
+## Markdown Formatting
+
+All long-form text fields support basic markdown formatting. Each field has **Edit** and **Preview** tabs:
+
+- **Edit tab** — type your text with markdown syntax
+- **Preview tab** — see the formatted result before saving
+
+### Supported syntax
+
+| Syntax | Result |
+|---|---|
+| `**bold text**` | **bold text** |
+| `*italic text*` | *italic text* |
+| `# Heading` | Large heading |
+| `## Sub-heading` | Smaller heading |
+| `- item` or `* item` | Bullet list |
+| `1. item` | Numbered list |
+
+### Fields with markdown support
+
+- **Meeting notes** and **Feedback** (Meeting form)
+- **Annual Overall Notes** (Meetings tab, year section)
+- **Goal description** (Goal form)
+- **Achievements**, **Strengths**, **Development Areas**, **Development Plan**, **Peer Feedback Notes** (Appraisal form)
+
+> A hint below each field shows: `Supports **bold**, *italic*, # headings, - lists`
 
 ---
 
@@ -489,7 +517,7 @@ Even a quick emoji click per meeting creates a useful mood trend over months —
 The open action item reminder panel at the top of the new meeting form is your check-in on last time's commitments.
 
 **Write annual notes before the year closes**
-The Annual Notes section feeds directly into both PDF reports.
+The Annual Notes section captures your year-end summary per fiscal year — use markdown to structure bullet points and highlights.
 
 **Fill in the Appraisal tab before the 9-Box session**
 Set Performance and Potential for every team member before the team overview meeting — the matrix is your agenda.

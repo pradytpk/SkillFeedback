@@ -1,6 +1,14 @@
 import { Document, Page, View, Text, StyleSheet, Svg, Rect, G } from "@react-pdf/renderer";
 import { RATING_LABELS, RATING_COLORS } from "@/lib/constants";
 
+const RATING_SCALE = [
+  { code: "S", label: "Exceptional", desc: "Significantly exceeded all expectations" },
+  { code: "A", label: "Exceeds", desc: "Consistently above expectations" },
+  { code: "B", label: "Meets", desc: "Fully meets expectations" },
+  { code: "C", label: "Developing", desc: "Partially meets expectations" },
+  { code: "D", label: "Below", desc: "Not meeting expectations" },
+];
+
 const styles = StyleSheet.create({
   page: { fontFamily: "Helvetica", fontSize: 9, color: "#111827", padding: 40, lineHeight: 1.4 },
   header: { marginBottom: 20, paddingBottom: 14, borderBottom: "1.5pt solid #e5e7eb" },
@@ -28,19 +36,22 @@ const styles = StyleSheet.create({
   appraisalCard: { border: "0.5pt solid #fed7aa", backgroundColor: "#fff7ed", borderRadius: 4, marginBottom: 16 },
   appraisalHeader: { paddingHorizontal: 10, paddingVertical: 7, borderBottom: "0.5pt solid #fed7aa", flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   appraisalFY: { fontSize: 11, fontFamily: "Helvetica-Bold", color: "#c2410c" },
-  appraisalRating: { fontSize: 14, fontFamily: "Helvetica-Bold", color: "#9a3412" },
+  appraisalRatingBadge: { flexDirection: "row", alignItems: "center", gap: 6 },
+  appraisalRatingCode: { fontSize: 18, fontFamily: "Helvetica-Bold", color: "#9a3412" },
+  appraisalRatingLabel: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#9a3412" },
+  appraisalRatingDesc: { fontSize: 8, color: "#c2410c" },
   appraisalBody: { paddingHorizontal: 10, paddingVertical: 8 },
   appraisalField: { marginBottom: 8 },
   appraisalLabel: { fontSize: 8, fontFamily: "Helvetica-Bold", color: "#6b7280", marginBottom: 2, textTransform: "uppercase" },
   appraisalText: { fontSize: 9, color: "#111827" },
   talentBadge: { fontSize: 8, color: "#374151", marginTop: 4 },
-  // Year notes
-  yearCard: { marginBottom: 12, borderRadius: 4, border: "0.5pt solid #fed7aa", backgroundColor: "#fff7ed" },
-  yearHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, paddingVertical: 6, borderBottom: "0.5pt solid #fed7aa" },
-  yearLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#c2410c" },
-  yearMeta: { fontSize: 8, color: "#9ca3af" },
-  yearNotes: { fontSize: 8.5, color: "#374151", paddingHorizontal: 10, paddingVertical: 8 },
-  noNotes: { fontSize: 8, color: "#d1d5db", fontStyle: "italic", paddingHorizontal: 10, paddingVertical: 8 },
+  // Rating scale legend
+  ratingLegendBox: { border: "0.5pt solid #e5e7eb", borderRadius: 4, marginBottom: 16, padding: 8, backgroundColor: "#f9fafb" },
+  ratingLegendTitle: { fontSize: 8, fontFamily: "Helvetica-Bold", color: "#6b7280", marginBottom: 6, textTransform: "uppercase" },
+  ratingLegendRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 4 },
+  ratingLegendCode: { fontSize: 11, fontFamily: "Helvetica-Bold", color: "#9a3412", width: 16 },
+  ratingLegendLabel: { fontSize: 8.5, fontFamily: "Helvetica-Bold", color: "#111827", width: 80 },
+  ratingLegendDesc: { fontSize: 8.5, color: "#6b7280", flex: 1 },
   empty: { fontSize: 8.5, color: "#9ca3af", fontStyle: "italic", paddingVertical: 6 },
   footer: { position: "absolute", bottom: 24, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
   footerText: { fontSize: 7.5, color: "#d1d5db" },
@@ -107,17 +118,31 @@ function CategoryBar({ name, avg, barWidth = 260 }: { name: string; avg: number;
   );
 }
 
+function RatingScaleLegend() {
+  return (
+    <View style={styles.ratingLegendBox}>
+      <Text style={styles.ratingLegendTitle}>Overall Rating Scale</Text>
+      {RATING_SCALE.map((item) => (
+        <View key={item.code} style={styles.ratingLegendRow}>
+          <Text style={styles.ratingLegendCode}>{item.code}</Text>
+          <Text style={styles.ratingLegendLabel}>{item.label}</Text>
+          <Text style={styles.ratingLegendDesc}>{item.desc}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export interface AppraisalReportData {
   employee: { name: string; role: string; team: string; startDate: string };
   categories: { id: string; name: string; skills: { id: string; name: string; latestRating: number | null }[] }[];
   goalsByFY: { fiscalYear: string; goals: { id: string; title: string; status: string; progressPct: number; quarter: string | null; weight: number }[] }[];
   appraisalRecords: { fiscalYear: string; overallRating: string | null; talentBoxPerf: string | null; talentBoxPot: string | null; achievements: string | null; strengths: string | null; developAreas: string | null; devPlanNextYear: string | null; peerFeedbackNotes: string | null }[];
-  yearNotes: { yearLabel: string; notes: string; meetingCount: number }[];
   generatedAt: string;
 }
 
 export default function AppraisalReportPDF({ data }: { data: AppraisalReportData }) {
-  const { employee, categories, goalsByFY, appraisalRecords, yearNotes, generatedAt } = data;
+  const { employee, categories, goalsByFY, appraisalRecords, generatedAt } = data;
 
   const categoryAverages = categories.map((cat) => {
     const rated = cat.skills.filter((s) => s.latestRating !== null);
@@ -125,17 +150,132 @@ export default function AppraisalReportPDF({ data }: { data: AppraisalReportData
     return { id: cat.id, name: cat.name, avg, ratedCount: rated.length };
   }).filter((c) => c.ratedCount > 0);
 
+  const pageHeader = (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>{employee.name}</Text>
+      <Text style={styles.headerMeta}>{employee.role}  ·  {employee.team}  ·  Since {formatDate(employee.startDate)}</Text>
+      <Text style={styles.headerGenerated}>Appraisal Report generated on {formatDate(generatedAt)}</Text>
+    </View>
+  );
+
+  const pageFooter = (
+    <View style={styles.footer} fixed>
+      <Text style={styles.footerText}>SkillTracker — Appraisal Report — Confidential</Text>
+      <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+    </View>
+  );
+
   return (
     <Document title={`${employee.name} — Appraisal Report`} author="SkillTracker">
 
-      {/* Page 1: Header + Skill Overview + Skill Matrix */}
+      {/* Page 1: Appraisal Records */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>{employee.name}</Text>
-          <Text style={styles.headerMeta}>{employee.role}  ·  {employee.team}  ·  Since {formatDate(employee.startDate)}</Text>
-          <Text style={styles.headerGenerated}>Appraisal Report generated on {formatDate(generatedAt)}</Text>
+        {pageHeader}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Appraisal Records</Text>
+          <RatingScaleLegend />
+          {appraisalRecords.length === 0 ? (
+            <Text style={styles.empty}>No appraisal records yet.</Text>
+          ) : (
+            appraisalRecords.map((r) => {
+              const ratingMeta = RATING_SCALE.find((s) => s.code === r.overallRating);
+              return (
+                <View key={r.fiscalYear} style={styles.appraisalCard}>
+                  <View style={styles.appraisalHeader}>
+                    <Text style={styles.appraisalFY}>FY {r.fiscalYear}</Text>
+                    <View style={styles.appraisalRatingBadge}>
+                      {r.overallRating && (
+                        <View style={{ alignItems: "flex-end" }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                            <Text style={styles.appraisalRatingCode}>{r.overallRating}</Text>
+                            {ratingMeta && <Text style={styles.appraisalRatingLabel}>{ratingMeta.label}</Text>}
+                          </View>
+                          {ratingMeta && <Text style={styles.appraisalRatingDesc}>{ratingMeta.desc}</Text>}
+                        </View>
+                      )}
+                      {r.talentBoxPerf && r.talentBoxPot && (
+                        <Text style={styles.talentBadge}>{r.talentBoxPerf} Perf / {r.talentBoxPot} Pot</Text>
+                      )}
+                    </View>
+                  </View>
+                  <View style={styles.appraisalBody}>
+                    {r.achievements && (
+                      <View style={styles.appraisalField}>
+                        <Text style={styles.appraisalLabel}>Achievements</Text>
+                        <Text style={styles.appraisalText}>{r.achievements}</Text>
+                      </View>
+                    )}
+                    {r.strengths && (
+                      <View style={styles.appraisalField}>
+                        <Text style={styles.appraisalLabel}>Strengths</Text>
+                        <Text style={styles.appraisalText}>{r.strengths}</Text>
+                      </View>
+                    )}
+                    {r.developAreas && (
+                      <View style={styles.appraisalField}>
+                        <Text style={styles.appraisalLabel}>Development Areas</Text>
+                        <Text style={styles.appraisalText}>{r.developAreas}</Text>
+                      </View>
+                    )}
+                    {r.devPlanNextYear && (
+                      <View style={styles.appraisalField}>
+                        <Text style={styles.appraisalLabel}>Development Plan (Next Year)</Text>
+                        <Text style={styles.appraisalText}>{r.devPlanNextYear}</Text>
+                      </View>
+                    )}
+                    {r.peerFeedbackNotes && (
+                      <View style={styles.appraisalField}>
+                        <Text style={styles.appraisalLabel}>Peer Feedback Notes</Text>
+                        <Text style={styles.appraisalText}>{r.peerFeedbackNotes}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })
+          )}
         </View>
 
+        {pageFooter}
+      </Page>
+
+      {/* Page 2: Goals by Fiscal Year */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Goals by Fiscal Year</Text>
+          {goalsByFY.length === 0 ? (
+            <Text style={styles.empty}>No goals recorded.</Text>
+          ) : (
+            goalsByFY.map((fy) => (
+              <View key={fy.fiscalYear} style={{ marginBottom: 12 }}>
+                <Text style={styles.fyHeader}>FY {fy.fiscalYear}</Text>
+                {fy.goals.map((g) => (
+                  <View key={g.id} style={styles.goalCard}>
+                    <Text style={styles.goalTitle}>{g.title}</Text>
+                    <View style={styles.goalMeta}>
+                      <Text style={styles.goalMeta}>
+                        Status: {g.status}
+                        {g.quarter ? `  ·  ${g.quarter}` : ""}
+                        {g.weight > 1 ? `  ·  Weight: ${g.weight}` : ""}
+                      </Text>
+                    </View>
+                    <View style={styles.goalProgress}>
+                      <ProgressBar pct={g.progressPct} barWidth={200} />
+                      <Text style={{ fontSize: 8, color: "#6b7280", width: 40 }}>{g.progressPct}%</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ))
+          )}
+        </View>
+
+        {pageFooter}
+      </Page>
+
+      {/* Page 3: Skill Overview + Skill Matrix */}
+      <Page size="A4" style={styles.page}>
         {categoryAverages.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skill Overview by Category</Text>
@@ -178,135 +318,7 @@ export default function AppraisalReportPDF({ data }: { data: AppraisalReportData
           )}
         </View>
 
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>SkillTracker — Appraisal Report — Confidential</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      </Page>
-
-      {/* Page 2: Goals by Fiscal Year */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Goals by Fiscal Year</Text>
-          {goalsByFY.length === 0 ? (
-            <Text style={styles.empty}>No goals recorded.</Text>
-          ) : (
-            goalsByFY.map((fy) => (
-              <View key={fy.fiscalYear} style={{ marginBottom: 12 }}>
-                <Text style={styles.fyHeader}>FY {fy.fiscalYear}</Text>
-                {fy.goals.map((g) => (
-                  <View key={g.id} style={styles.goalCard}>
-                    <Text style={styles.goalTitle}>{g.title}</Text>
-                    <View style={styles.goalMeta}>
-                      <Text style={styles.goalMeta}>
-                        Status: {g.status}
-                        {g.quarter ? `  ·  ${g.quarter}` : ""}
-                        {g.weight > 1 ? `  ·  Weight: ${g.weight}` : ""}
-                      </Text>
-                    </View>
-                    <View style={styles.goalProgress}>
-                      <ProgressBar pct={g.progressPct} barWidth={200} />
-                      <Text style={{ fontSize: 8, color: "#6b7280", width: 40 }}>{g.progressPct}%</Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            ))
-          )}
-        </View>
-
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>SkillTracker — Appraisal Report — Confidential</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      </Page>
-
-      {/* Page 3: Appraisal Records */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Appraisal Records</Text>
-          {appraisalRecords.length === 0 ? (
-            <Text style={styles.empty}>No appraisal records yet.</Text>
-          ) : (
-            appraisalRecords.map((r) => (
-              <View key={r.fiscalYear} style={styles.appraisalCard}>
-                <View style={styles.appraisalHeader}>
-                  <Text style={styles.appraisalFY}>FY {r.fiscalYear}</Text>
-                  <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-                    {r.overallRating && <Text style={styles.appraisalRating}>{r.overallRating}</Text>}
-                    {r.talentBoxPerf && r.talentBoxPot && (
-                      <Text style={styles.talentBadge}>{r.talentBoxPerf} Perf / {r.talentBoxPot} Pot</Text>
-                    )}
-                  </View>
-                </View>
-                <View style={styles.appraisalBody}>
-                  {r.achievements && (
-                    <View style={styles.appraisalField}>
-                      <Text style={styles.appraisalLabel}>Achievements</Text>
-                      <Text style={styles.appraisalText}>{r.achievements}</Text>
-                    </View>
-                  )}
-                  {r.strengths && (
-                    <View style={styles.appraisalField}>
-                      <Text style={styles.appraisalLabel}>Strengths</Text>
-                      <Text style={styles.appraisalText}>{r.strengths}</Text>
-                    </View>
-                  )}
-                  {r.developAreas && (
-                    <View style={styles.appraisalField}>
-                      <Text style={styles.appraisalLabel}>Development Areas</Text>
-                      <Text style={styles.appraisalText}>{r.developAreas}</Text>
-                    </View>
-                  )}
-                  {r.devPlanNextYear && (
-                    <View style={styles.appraisalField}>
-                      <Text style={styles.appraisalLabel}>Development Plan (Next Year)</Text>
-                      <Text style={styles.appraisalText}>{r.devPlanNextYear}</Text>
-                    </View>
-                  )}
-                  {r.peerFeedbackNotes && (
-                    <View style={styles.appraisalField}>
-                      <Text style={styles.appraisalLabel}>Peer Feedback Notes</Text>
-                      <Text style={styles.appraisalText}>{r.peerFeedbackNotes}</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            ))
-          )}
-        </View>
-
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>SkillTracker — Appraisal Report — Confidential</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      </Page>
-
-      {/* Page 4: Annual Notes */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Annual Review Notes (Fiscal Year: April – March)</Text>
-          {yearNotes.length === 0 ? (
-            <Text style={styles.empty}>No annual notes recorded yet.</Text>
-          ) : (
-            yearNotes.map((yn) => (
-              <View key={yn.yearLabel} style={styles.yearCard}>
-                <View style={styles.yearHeader}>
-                  <Text style={styles.yearLabel}>FY {yn.yearLabel}</Text>
-                  <Text style={styles.yearMeta}>{yn.meetingCount} 1:1 meeting{yn.meetingCount !== 1 ? "s" : ""} this year</Text>
-                </View>
-                {yn.notes
-                  ? <Text style={styles.yearNotes}>{yn.notes}</Text>
-                  : <Text style={styles.noNotes}>No annual notes added for this year.</Text>}
-              </View>
-            ))
-          )}
-        </View>
-
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>SkillTracker — Appraisal Report — Confidential</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
+        {pageFooter}
       </Page>
 
     </Document>

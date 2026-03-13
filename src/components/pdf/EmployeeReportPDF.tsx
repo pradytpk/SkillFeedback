@@ -21,13 +21,6 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: "row", alignItems: "center", gap: 4 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendText: { fontSize: 7.5, color: "#6b7280" },
-  // Year notes
-  yearCard: { marginBottom: 12, borderRadius: 4, border: "0.5pt solid #fed7aa", backgroundColor: "#fff7ed" },
-  yearHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, paddingVertical: 6, borderBottom: "0.5pt solid #fed7aa" },
-  yearLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#c2410c" },
-  yearMeta: { fontSize: 8, color: "#9ca3af" },
-  yearNotes: { fontSize: 8.5, color: "#374151", paddingHorizontal: 10, paddingVertical: 8 },
-  noNotes: { fontSize: 8, color: "#d1d5db", fontStyle: "italic", paddingHorizontal: 10, paddingVertical: 8 },
   empty: { fontSize: 8.5, color: "#9ca3af", fontStyle: "italic", paddingVertical: 6 },
   footer: { position: "absolute", bottom: 24, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between" },
   footerText: { fontSize: 7.5, color: "#d1d5db" },
@@ -85,12 +78,11 @@ function CategoryBar({ name, avg, barWidth = 260 }: { name: string; avg: number;
 export interface ReportData {
   employee: { name: string; role: string; team: string; startDate: string };
   categories: { id: string; name: string; skills: { id: string; name: string; latestRating: number | null }[] }[];
-  yearNotes: { yearLabel: string; notes: string; meetingCount: number }[];
   generatedAt: string;
 }
 
 export default function EmployeeReportPDF({ data }: { data: ReportData }) {
-  const { employee, categories, yearNotes, generatedAt } = data;
+  const { employee, categories, generatedAt } = data;
 
   const categoryAverages = categories.map((cat) => {
     const rated = cat.skills.filter((s) => s.latestRating !== null);
@@ -100,7 +92,6 @@ export default function EmployeeReportPDF({ data }: { data: ReportData }) {
 
   return (
     <Document title={`${employee.name} — Skill Report`} author="SkillTracker">
-      {/* Page 1: Header + Charts + Skill Matrix */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{employee.name}</Text>
@@ -110,7 +101,6 @@ export default function EmployeeReportPDF({ data }: { data: ReportData }) {
           <Text style={styles.headerGenerated}>Report generated on {formatDate(generatedAt)}</Text>
         </View>
 
-        {/* Category Overview Chart */}
         {categoryAverages.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skill Overview by Category</Text>
@@ -128,7 +118,6 @@ export default function EmployeeReportPDF({ data }: { data: ReportData }) {
           </View>
         )}
 
-        {/* Skill Matrix */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Skill Matrix</Text>
           {categories.length === 0 ? (
@@ -157,33 +146,6 @@ export default function EmployeeReportPDF({ data }: { data: ReportData }) {
                     </View>
                   );
                 })}
-              </View>
-            ))
-          )}
-        </View>
-
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>SkillTracker — Confidential</Text>
-          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      </Page>
-
-      {/* Page 2: Year-wise Annual Notes */}
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Annual Review Notes (Fiscal Year: April – March)</Text>
-          {yearNotes.length === 0 ? (
-            <Text style={styles.empty}>No annual notes recorded yet.</Text>
-          ) : (
-            yearNotes.map((yn) => (
-              <View key={yn.yearLabel} style={styles.yearCard}>
-                <View style={styles.yearHeader}>
-                  <Text style={styles.yearLabel}>FY {yn.yearLabel}</Text>
-                  <Text style={styles.yearMeta}>{yn.meetingCount} 1:1 meeting{yn.meetingCount !== 1 ? "s" : ""} this year</Text>
-                </View>
-                {yn.notes
-                  ? <Text style={styles.yearNotes}>{yn.notes}</Text>
-                  : <Text style={styles.noNotes}>No annual notes added for this year.</Text>}
               </View>
             ))
           )}

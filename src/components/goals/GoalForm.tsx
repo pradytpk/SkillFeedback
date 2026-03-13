@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Textarea from "@/components/ui/Textarea";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import { createGoal, updateGoal } from "@/actions/goals";
 
 function getCurrentFiscalYear() {
@@ -41,11 +41,13 @@ export default function GoalForm({ employeeId, open, onClose, goal, availableSki
   const formRef = useRef<HTMLFormElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [description, setDescription] = useState(goal?.description ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!formRef.current) return;
     const fd = new FormData(formRef.current);
+    fd.set("description", description);
     setSaving(true);
     setError("");
     try {
@@ -73,10 +75,13 @@ export default function GoalForm({ employeeId, open, onClose, goal, availableSki
           <Input name="title" defaultValue={goal?.title ?? ""} placeholder="e.g. Lead a cross-team project" required />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-          <Textarea name="description" defaultValue={goal?.description ?? ""} placeholder="What does success look like?" rows={3} />
-        </div>
+        <MarkdownEditor
+          label="Description (optional)"
+          value={description}
+          onChange={setDescription}
+          placeholder="What does success look like?"
+          rows={3}
+        />
 
         <div className="grid grid-cols-2 gap-3">
           <div>

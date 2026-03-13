@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { upsertAppraisalRecord } from "@/actions/appraisal";
 import Button from "@/components/ui/Button";
-import Textarea from "@/components/ui/Textarea";
+import MarkdownEditor from "@/components/ui/MarkdownEditor";
 import { CheckCircle2 } from "lucide-react";
 
 interface AppraisalRecord {
@@ -42,6 +42,11 @@ export default function AppraisalForm({ employeeId, fiscalYear, record }: Apprai
   const [overallRating, setOverallRating] = useState(record?.overallRating ?? "");
   const [talentBoxPerf, setTalentBoxPerf] = useState(record?.talentBoxPerf ?? "");
   const [talentBoxPot, setTalentBoxPot] = useState(record?.talentBoxPot ?? "");
+  const [achievements, setAchievements] = useState(record?.achievements ?? "");
+  const [strengths, setStrengths] = useState(record?.strengths ?? "");
+  const [developAreas, setDevelopAreas] = useState(record?.developAreas ?? "");
+  const [devPlanNextYear, setDevPlanNextYear] = useState(record?.devPlanNextYear ?? "");
+  const [peerFeedbackNotes, setPeerFeedbackNotes] = useState(record?.peerFeedbackNotes ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +55,11 @@ export default function AppraisalForm({ employeeId, fiscalYear, record }: Apprai
     fd.set("overallRating", overallRating);
     fd.set("talentBoxPerf", talentBoxPerf);
     fd.set("talentBoxPot", talentBoxPot);
+    fd.set("achievements", achievements);
+    fd.set("strengths", strengths);
+    fd.set("developAreas", developAreas);
+    fd.set("devPlanNextYear", devPlanNextYear);
+    fd.set("peerFeedbackNotes", peerFeedbackNotes);
     setSaving(true);
     try {
       await upsertAppraisalRecord(employeeId, fiscalYear, fd);
@@ -128,39 +138,39 @@ export default function AppraisalForm({ employeeId, fiscalYear, record }: Apprai
       </div>
 
       {/* Text sections */}
-      <Textarea
+      <MarkdownEditor
         label="Achievements"
-        name="achievements"
+        value={achievements}
+        onChange={setAchievements}
         placeholder="Key accomplishments this fiscal year..."
-        defaultValue={record?.achievements ?? ""}
         rows={3}
       />
-      <Textarea
+      <MarkdownEditor
         label="Strengths"
-        name="strengths"
+        value={strengths}
+        onChange={setStrengths}
         placeholder="Core strengths demonstrated..."
-        defaultValue={record?.strengths ?? ""}
         rows={3}
       />
-      <Textarea
+      <MarkdownEditor
         label="Development Areas"
-        name="developAreas"
+        value={developAreas}
+        onChange={setDevelopAreas}
         placeholder="Areas to improve or focus on..."
-        defaultValue={record?.developAreas ?? ""}
         rows={3}
       />
-      <Textarea
+      <MarkdownEditor
         label="Development Plan (Next Year)"
-        name="devPlanNextYear"
+        value={devPlanNextYear}
+        onChange={setDevPlanNextYear}
         placeholder="Planned actions, training, targets for next FY..."
-        defaultValue={record?.devPlanNextYear ?? ""}
         rows={3}
       />
-      <Textarea
+      <MarkdownEditor
         label="Peer Feedback Notes"
-        name="peerFeedbackNotes"
+        value={peerFeedbackNotes}
+        onChange={setPeerFeedbackNotes}
         placeholder="Summary of 360/peer feedback received..."
-        defaultValue={record?.peerFeedbackNotes ?? ""}
         rows={3}
       />
 

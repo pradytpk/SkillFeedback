@@ -12,14 +12,15 @@ A web application for managers to track team skills, run self-assessments, log 1
 - **Self-Assessment** — Per-employee opt-in; manager and employee ratings shown side-by-side (solid vs outlined dots)
 - **Rating History** — Every rating inserts a new row — full history for progress charts
 - **1:1 Meetings** — Grouped by fiscal year (April–March); mood emoji + quality flag per meeting; meeting note templates
-- **Annual Notes** — Per fiscal year; feeds into PDF export
+- **Annual Notes** — Per fiscal year summary notes (editable with markdown support)
 - **Action Items** — Tracked per meeting with status toggle; open items carry forward as reminders in new meetings
 - **Commitments** — Verbal commitments per meeting; separate from action items; OPEN/DONE/DROPPED status
 - **Goal Tracking** — FY/quarter grouping, progress % with history log, weight (Normal/Important/Critical), linked skill
 - **Appraisal Records** — Per-employee per-FY: S/A/B/C/D rating, 9-box placement, achievements, strengths, dev plan
 - **9-Box Talent Matrix** — Team-wide Performance × Potential grid; clickable employee avatars
 - **Progress Charts** — Radar, skill history line chart, meeting frequency, and mood trend chart
-- **PDF Export** — Skill Report (skill matrix + annual notes) OR full Appraisal Report (4 pages)
+- **PDF Export** — Skill Report (skill matrix) OR full Appraisal Report (3 pages: appraisal records with S/A/B/C/D legend, goals, skill matrix)
+- **Markdown Support** — All notes fields (meeting notes, feedback, goal descriptions, appraisal text sections, annual notes) support **bold**, *italic*, # headings, and - lists with Edit/Preview tabs
 - **Settings** — Manage skill categories, teams, meeting templates, and role benchmarks
 
 ---
@@ -35,6 +36,7 @@ A web application for managers to track team skills, run self-assessments, log 1
 | Database | SQLite (file-based) |
 | Charts | Recharts 3 |
 | PDF | @react-pdf/renderer |
+| Markdown | react-markdown |
 | Icons | Lucide React |
 | Validation | Zod |
 | Date utilities | date-fns |
@@ -273,13 +275,11 @@ Generated server-side via `@react-pdf/renderer` at `/api/employees/[id]/report`:
 
 **Skill Report** (default):
 - Page 1 — SVG bar chart per category + full skill matrix
-- Page 2 — Annual review notes per fiscal year
 
 **Appraisal Report** (`?mode=appraisal`):
-- Page 1 — Skill overview chart + skill matrix
+- Page 1 — Appraisal records (S/A/B/C/D rating with legend, 9-box placement, achievements, strengths, dev areas, dev plan, peer feedback)
 - Page 2 — Goals by fiscal year with progress bars
-- Page 3 — Appraisal records (rating, talent box, achievements, dev plan)
-- Page 4 — Annual review notes
+- Page 3 — Skill overview chart + skill matrix
 
 ### Self-Assessment
 - Toggled per employee via `selfAssessmentEnabled` on the Employee model

@@ -5,13 +5,6 @@ import EmployeeReportPDF, { type ReportData } from "@/components/pdf/EmployeeRep
 import AppraisalReportPDF, { type AppraisalReportData } from "@/components/pdf/AppraisalReportPDF";
 import React from "react";
 
-function getFiscalYear(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const month = d.getMonth();
-  const year = d.getFullYear();
-  return month >= 3 ? `${year}-${String(year + 1).slice(2)}` : `${year - 1}-${String(year).slice(2)}`;
-}
-
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const employee = await prisma.employee.findUnique({ where: { id: params.id } });
   if (!employee) return new Response("Not found", { status: 404 });
@@ -42,21 +35,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     },
   });
 
-  const rawYearNotes = await prisma.yearNote.findMany({
-    where: { employeeId: params.id },
-    orderBy: { yearLabel: "desc" },
-  });
-
-  const rawMeetings = await prisma.meeting.findMany({
-    where: { employeeId: params.id },
-    select: { meetingDate: true },
-  });
-  const meetingCountByYear: Record<string, number> = {};
-  for (const m of rawMeetings) {
-    const fy = getFiscalYear(m.meetingDate);
-    meetingCountByYear[fy] = (meetingCountByYear[fy] ?? 0) + 1;
-  }
-
   const categories = rawCategories.map((cat) => ({
     id: cat.id,
     name: cat.name,
@@ -65,12 +43,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       name: s.name,
       latestRating: s.skillRatings[0]?.rating ?? null,
     })),
-  }));
-
-  const yearNotes = rawYearNotes.map((n) => ({
-    yearLabel: n.yearLabel,
-    notes: n.notes ?? "",
-    meetingCount: meetingCountByYear[n.yearLabel] ?? 0,
   }));
 
   if (mode === "appraisal") {
@@ -123,7 +95,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         devPlanNextYear: r.devPlanNextYear,
         peerFeedbackNotes: r.peerFeedbackNotes,
       })),
-      yearNotes,
       generatedAt: new Date().toISOString(),
     };
 
@@ -147,7 +118,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       startDate: employee.startDate.toISOString(),
     },
     categories,
-    yearNotes,
     generatedAt: new Date().toISOString(),
   };
 

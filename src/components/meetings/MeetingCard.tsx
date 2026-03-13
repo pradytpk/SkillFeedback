@@ -8,6 +8,7 @@ import MeetingForm from "./MeetingForm";
 import Button from "@/components/ui/Button";
 import { Pencil, Trash2, ChevronDown, ChevronUp, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 interface ActionItem {
   id: string;
@@ -104,7 +105,9 @@ export default function MeetingCard({
           {meeting.feedback && (
             <div className="mt-3 bg-orange-50 rounded-lg px-3 py-2">
               <p className="text-xs font-semibold text-orange-700 mb-1">Feedback</p>
-              <p className="text-sm text-gray-700">{meeting.feedback}</p>
+              <div className="text-sm text-gray-700 prose prose-sm max-w-none [&>p]:mb-1 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:pl-4 [&>ol>li]:list-decimal">
+                <ReactMarkdown>{meeting.feedback}</ReactMarkdown>
+              </div>
             </div>
           )}
         </div>
@@ -114,7 +117,9 @@ export default function MeetingCard({
             {meeting.notes && (
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Notes</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{meeting.notes}</p>
+                <div className="text-sm text-gray-700 prose prose-sm max-w-none [&>p]:mb-1 [&>ul]:pl-4 [&>ul>li]:list-disc [&>ol]:pl-4 [&>ol>li]:list-decimal">
+                  <ReactMarkdown>{meeting.notes}</ReactMarkdown>
+                </div>
               </div>
             )}
             <ActionItemList
