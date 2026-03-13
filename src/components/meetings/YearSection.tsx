@@ -15,28 +15,40 @@ interface ActionItem {
   updatedAt: string;
 }
 
+interface Commitment {
+  id: string;
+  description: string;
+  status: string;
+  dueDate: string | null;
+}
+
 interface Meeting {
   id: string;
   meetingDate: string;
   notes: string | null;
   feedback: string | null;
+  moodScore?: number | null;
+  qualityFlag?: string | null;
   createdAt: string;
   updatedAt: string;
   actionItems: ActionItem[];
+  commitments?: Commitment[];
 }
 
 interface Template { id: string; title: string; notesTemplate: string | null; }
+interface OpenActionItem { id: string; description: string; }
 
 interface Props {
   employeeId: string;
-  yearLabel: string;        // e.g. "2024-25"
+  yearLabel: string;
   meetings: Meeting[];
   initialNotes: string;
   defaultOpen?: boolean;
   templates?: Template[];
+  previousOpenItems?: OpenActionItem[];
 }
 
-export default function YearSection({ employeeId, yearLabel, meetings, initialNotes, defaultOpen, templates = [] }: Props) {
+export default function YearSection({ employeeId, yearLabel, meetings, initialNotes, defaultOpen, templates = [], previousOpenItems = [] }: Props) {
   const [open, setOpen] = useState(defaultOpen ?? false);
   const [notes, setNotes] = useState(initialNotes);
   const [editingNotes, setEditingNotes] = useState(false);
@@ -123,7 +135,7 @@ export default function YearSection({ employeeId, yearLabel, meetings, initialNo
           <div className="px-5 py-4">
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm font-medium text-gray-600">1:1 Meetings</p>
-              <AddMeetingButton employeeId={employeeId} templates={templates} />
+              <AddMeetingButton employeeId={employeeId} templates={templates} previousOpenItems={previousOpenItems} />
             </div>
             {meetings.length === 0 ? (
               <p className="text-sm text-gray-400 italic py-3 text-center">No meetings in this fiscal year.</p>

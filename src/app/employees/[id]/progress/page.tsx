@@ -16,6 +16,10 @@ const MeetingFrequencyChart = nextDynamic(
   () => import("@/components/charts/MeetingFrequencyChart"),
   { ssr: false }
 );
+const MoodTrendChart = nextDynamic(
+  () => import("@/components/charts/MoodTrendChart"),
+  { ssr: false }
+);
 
 export default async function ProgressPage({ params }: { params: { id: string } }) {
   const employee = await prisma.employee.findUnique({ where: { id: params.id } });
@@ -57,11 +61,11 @@ export default async function ProgressPage({ params }: { params: { id: string } 
     average: Math.round((sum / count) * 10) / 10,
   }));
 
-  // Meeting frequency
+  // Meeting frequency + mood
   const meetings = await prisma.meeting.findMany({
     where: { employeeId: params.id },
     orderBy: { meetingDate: "asc" },
-    select: { meetingDate: true },
+    select: { meetingDate: true, moodScore: true },
   });
 
   const byMonth: Record<string, number> = {};
@@ -74,6 +78,13 @@ export default async function ProgressPage({ params }: { params: { id: string } 
     label: format(new Date(month + "-01"), "MMM yy"),
     count,
   }));
+
+  const moodData = meetings
+    .filter((m) => m.moodScore !== null)
+    .map((m) => ({
+      date: format(m.meetingDate, "MMM d"),
+      mood: m.moodScore as number,
+    }));
 
   return (
     <div className="space-y-8">
@@ -98,6 +109,12 @@ export default async function ProgressPage({ params }: { params: { id: string } 
         <h3 className="font-semibold text-gray-800 mb-4">Skill Ratings Over Time</h3>
         <SkillProgressChart ratings={ratingsData} />
       </div>
+
+      {moodData.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <MoodTrendChart data={moodData} />
+        </div>
+      )}
     </div>
   );
 }

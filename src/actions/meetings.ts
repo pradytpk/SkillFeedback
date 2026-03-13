@@ -8,6 +8,8 @@ const MeetingSchema = z.object({
   meetingDate: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
   feedback: z.string().optional(),
+  moodScore: z.coerce.number().int().min(1).max(5).optional(),
+  qualityFlag: z.string().optional(),
 });
 
 export async function createMeeting(employeeId: string, formData: FormData) {
@@ -15,6 +17,8 @@ export async function createMeeting(employeeId: string, formData: FormData) {
     meetingDate: formData.get("meetingDate"),
     notes: formData.get("notes") || undefined,
     feedback: formData.get("feedback") || undefined,
+    moodScore: formData.get("moodScore") || undefined,
+    qualityFlag: formData.get("qualityFlag") || undefined,
   });
 
   await prisma.meeting.create({
@@ -23,6 +27,8 @@ export async function createMeeting(employeeId: string, formData: FormData) {
       meetingDate: new Date(data.meetingDate),
       notes: data.notes,
       feedback: data.feedback,
+      moodScore: data.moodScore ?? null,
+      qualityFlag: data.qualityFlag || null,
     },
   });
 
@@ -34,6 +40,8 @@ export async function updateMeeting(id: string, employeeId: string, formData: Fo
     meetingDate: formData.get("meetingDate"),
     notes: formData.get("notes") || undefined,
     feedback: formData.get("feedback") || undefined,
+    moodScore: formData.get("moodScore") || undefined,
+    qualityFlag: formData.get("qualityFlag") || undefined,
   });
 
   await prisma.meeting.update({
@@ -42,6 +50,8 @@ export async function updateMeeting(id: string, employeeId: string, formData: Fo
       meetingDate: new Date(data.meetingDate),
       notes: data.notes,
       feedback: data.feedback,
+      moodScore: data.moodScore ?? null,
+      qualityFlag: data.qualityFlag || null,
     },
   });
 

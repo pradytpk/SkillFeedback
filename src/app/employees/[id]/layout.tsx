@@ -6,6 +6,7 @@ import Avatar from "@/components/ui/Avatar";
 import EmployeeSubNav from "@/components/employees/EmployeeSubNav";
 import { formatDate } from "@/lib/utils";
 import { FileDown, ArrowLeft } from "lucide-react";
+import SelfAssessmentToggle from "@/components/employees/SelfAssessmentToggle";
 
 export default async function EmployeeLayout({
   children, params,
@@ -30,10 +31,17 @@ export default async function EmployeeLayout({
               </p>
             </div>
           </div>
-          <a href={`/api/employees/${params.id}/report`} download
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 transition-colors">
-            <FileDown className="w-4 h-4" /> Download Report
-          </a>
+          <div className="flex items-center gap-2">
+            <SelfAssessmentToggle employeeId={params.id} enabled={employee.selfAssessmentEnabled} />
+            <a href={`/api/employees/${params.id}/report`} download
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 transition-colors">
+              <FileDown className="w-4 h-4" /> Skill Report
+            </a>
+            <a href={`/api/employees/${params.id}/report?mode=appraisal`} download
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 transition-colors">
+              <FileDown className="w-4 h-4" /> Appraisal Report
+            </a>
+          </div>
         </div>
         <EmployeeSubNav employeeId={params.id} />
       </div>

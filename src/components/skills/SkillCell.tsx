@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import RatingDots from "@/components/ui/RatingDots";
+import SelfRatingDots from "./SelfRatingDots";
 import RatingModal from "./RatingModal";
 import { MessageSquare, CheckCircle2 } from "lucide-react";
 
@@ -12,10 +13,13 @@ interface SkillCellProps {
   currentRating: number | null;
   currentNotes: string | null;
   targetRating?: number | null;
+  selfAssessmentEnabled?: boolean;
+  currentSelfRating?: number | null;
 }
 
 export default function SkillCell({
   employeeId, skillId, skillName, categoryName, currentRating, currentNotes, targetRating,
+  selfAssessmentEnabled = false, currentSelfRating = null,
 }: SkillCellProps) {
   const [open, setOpen] = useState(false);
 
@@ -37,6 +41,11 @@ export default function SkillCell({
               : <span className="text-xs font-bold text-red-500 flex-shrink-0" title={`Target: ${targetRating}, gap: ${delta}`}>{delta}</span>
           )}
         </div>
+        {selfAssessmentEnabled && currentSelfRating !== null && (
+          <div className="mt-1">
+            <SelfRatingDots value={currentSelfRating} readonly />
+          </div>
+        )}
         {targetRating && !currentRating && (
           <p className="text-xs text-gray-300 mt-0.5">Target: {targetRating}</p>
         )}
@@ -56,6 +65,8 @@ export default function SkillCell({
         categoryName={categoryName}
         currentRating={currentRating}
         currentNotes={currentNotes}
+        selfAssessmentEnabled={selfAssessmentEnabled}
+        currentSelfRating={currentSelfRating}
       />
     </>
   );

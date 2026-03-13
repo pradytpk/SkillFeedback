@@ -22,8 +22,18 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
   const meetings = await prisma.meeting.findMany({
     where: { employeeId: params.id },
     orderBy: { meetingDate: "desc" },
-    include: { actionItems: { orderBy: { createdAt: "asc" } } },
+    include: {
+      actionItems: { orderBy: { createdAt: "asc" } },
+      commitments: { orderBy: { createdAt: "asc" } },
+    },
   });
+
+  // Previous meeting's open action items (for carry-forward in new meeting form)
+  const previousOpenItems = meetings.length > 0
+    ? meetings[0].actionItems
+        .filter((a) => a.status === "OPEN" || a.status === "IN_PROGRESS")
+        .map((a) => ({ id: a.id, description: a.description }))
+    : [];
 
   const templates = await prisma.meetingTemplate.findMany({ orderBy: { title: "asc" } });
 
@@ -58,6 +68,12 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
         createdAt: a.createdAt.toISOString(),
         updatedAt: a.updatedAt.toISOString(),
       })),
+      commitments: m.commitments.map((c) => ({
+        id: c.id,
+        description: c.description,
+        status: c.status,
+        dueDate: c.dueDate ? c.dueDate.toISOString() : null,
+      })),
     }));
 
   return (
@@ -69,7 +85,7 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
             {meetings.length} meeting{meetings.length !== 1 ? "s" : ""} · April–March fiscal year
           </p>
         </div>
-        <AddMeetingButton employeeId={params.id} templates={templates} />
+        <AddMeetingButton employeeId={params.id} templates={templates} previousOpenItems={previousOpenItems} />
       </div>
 
       {meetings.length === 0 ? (
@@ -89,6 +105,7 @@ export default async function MeetingsPage({ params }: { params: { id: string } 
               initialNotes={yearNotesMap[year] ?? ""}
               defaultOpen={year === currentFY}
               templates={templates}
+              previousOpenItems={previousOpenItems}
             />
           ))}
         </div>

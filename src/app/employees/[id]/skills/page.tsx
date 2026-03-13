@@ -87,6 +87,8 @@ export default async function SkillsPage({ params }: { params: { id: string } })
                           currentRating={latest?.rating ?? null}
                           currentNotes={latest?.notes ?? null}
                           targetRating={benchmarkMap[skill.id] ?? null}
+                          selfAssessmentEnabled={employee.selfAssessmentEnabled}
+                          currentSelfRating={latest?.selfRating ?? null}
                         />
                       </div>
                     );

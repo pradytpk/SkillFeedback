@@ -45,6 +45,17 @@ export async function deleteEmployee(id: string) {
   revalidatePath("/employees");
 }
 
+export async function toggleSelfAssessment(id: string) {
+  const employee = await prisma.employee.findUnique({ where: { id }, select: { selfAssessmentEnabled: true } });
+  if (!employee) throw new Error("Employee not found");
+  await prisma.employee.update({
+    where: { id },
+    data: { selfAssessmentEnabled: !employee.selfAssessmentEnabled },
+  });
+  revalidatePath(`/employees/${id}/skills`);
+  revalidatePath(`/employees/${id}`);
+}
+
 const BulkRowSchema = z.object({
   name: z.string().min(1, "Name required"),
   role: z.string().min(1, "Role required"),

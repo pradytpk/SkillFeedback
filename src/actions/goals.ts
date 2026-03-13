@@ -9,6 +9,10 @@ const GoalSchema = z.object({
   description: z.string().optional(),
   category: z.string().optional(),
   targetDate: z.string().optional(),
+  fiscalYear: z.string().optional(),
+  quarter: z.string().optional(),
+  weight: z.coerce.number().int().min(1).max(3).optional(),
+  linkedSkillId: z.string().optional(),
 });
 
 export async function createGoal(employeeId: string, formData: FormData) {
@@ -17,6 +21,10 @@ export async function createGoal(employeeId: string, formData: FormData) {
     description: formData.get("description") || undefined,
     category: formData.get("category") || undefined,
     targetDate: formData.get("targetDate") || undefined,
+    fiscalYear: formData.get("fiscalYear") || undefined,
+    quarter: formData.get("quarter") || undefined,
+    weight: formData.get("weight") || undefined,
+    linkedSkillId: formData.get("linkedSkillId") || undefined,
   });
 
   await prisma.goal.create({
@@ -26,6 +34,10 @@ export async function createGoal(employeeId: string, formData: FormData) {
       description: data.description,
       category: data.category,
       targetDate: data.targetDate ? new Date(data.targetDate) : undefined,
+      fiscalYear: data.fiscalYear,
+      quarter: data.quarter,
+      weight: data.weight ?? 1,
+      linkedSkillId: data.linkedSkillId || null,
     },
   });
 
@@ -38,6 +50,10 @@ export async function updateGoal(id: string, employeeId: string, formData: FormD
     description: formData.get("description") || undefined,
     category: formData.get("category") || undefined,
     targetDate: formData.get("targetDate") || undefined,
+    fiscalYear: formData.get("fiscalYear") || undefined,
+    quarter: formData.get("quarter") || undefined,
+    weight: formData.get("weight") || undefined,
+    linkedSkillId: formData.get("linkedSkillId") || undefined,
   });
 
   await prisma.goal.update({
@@ -47,9 +63,21 @@ export async function updateGoal(id: string, employeeId: string, formData: FormD
       description: data.description,
       category: data.category,
       targetDate: data.targetDate ? new Date(data.targetDate) : null,
+      fiscalYear: data.fiscalYear,
+      quarter: data.quarter,
+      weight: data.weight ?? 1,
+      linkedSkillId: data.linkedSkillId || null,
     },
   });
 
+  revalidatePath(`/employees/${employeeId}/goals`);
+}
+
+export async function updateGoalProgress(id: string, employeeId: string, progressPct: number, note: string) {
+  await prisma.$transaction([
+    prisma.goal.update({ where: { id }, data: { progressPct } }),
+    prisma.goalUpdate.create({ data: { goalId: id, progressPct, note } }),
+  ]);
   revalidatePath(`/employees/${employeeId}/goals`);
 }
 

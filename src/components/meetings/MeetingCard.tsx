@@ -3,6 +3,7 @@ import { useState } from "react";
 import { deleteMeeting } from "@/actions/meetings";
 import { formatDate, formatDateRelative } from "@/lib/utils";
 import ActionItemList from "./ActionItemList";
+import CommitmentList from "./CommitmentList";
 import MeetingForm from "./MeetingForm";
 import Button from "@/components/ui/Button";
 import { Pencil, Trash2, ChevronDown, ChevronUp, Calendar } from "lucide-react";
@@ -15,13 +16,30 @@ interface ActionItem {
   dueDate: Date | string | null;
 }
 
+interface Commitment {
+  id: string;
+  description: string;
+  status: string;
+  dueDate: string | null;
+}
+
 interface Meeting {
   id: string;
   meetingDate: Date | string;
   notes: string | null;
   feedback: string | null;
+  moodScore?: number | null;
+  qualityFlag?: string | null;
   actionItems: ActionItem[];
+  commitments?: Commitment[];
 }
+
+const MOOD_EMOJI: Record<number, string> = { 1: "😞", 2: "😕", 3: "😐", 4: "🙂", 5: "😄" };
+const QUALITY_STYLE: Record<string, string> = {
+  GREAT: "bg-green-100 text-green-700",
+  NORMAL: "bg-gray-100 text-gray-600",
+  DIFFICULT: "bg-red-100 text-red-600",
+};
 
 export default function MeetingCard({
   meeting,
@@ -41,6 +59,7 @@ export default function MeetingCard({
   }
 
   const openCount = meeting.actionItems.filter((a) => a.status === "OPEN" || a.status === "IN_PROGRESS").length;
+  const commitments = meeting.commitments ?? [];
 
   return (
     <>
@@ -53,6 +72,16 @@ export default function MeetingCard({
                 <p className="font-semibold text-gray-900">{formatDate(meeting.meetingDate)}</p>
                 <p className="text-xs text-gray-400">{formatDateRelative(meeting.meetingDate)}</p>
               </div>
+              {meeting.moodScore && (
+                <span title={`Mood: ${meeting.moodScore}/5`} className="text-lg ml-1">
+                  {MOOD_EMOJI[meeting.moodScore]}
+                </span>
+              )}
+              {meeting.qualityFlag && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${QUALITY_STYLE[meeting.qualityFlag] ?? "bg-gray-100 text-gray-600"}`}>
+                  {meeting.qualityFlag.charAt(0) + meeting.qualityFlag.slice(1).toLowerCase()}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1">
               {openCount > 0 && (
@@ -96,15 +125,22 @@ export default function MeetingCard({
               meetingId={meeting.id}
               employeeId={employeeId}
             />
+            <CommitmentList
+              commitments={commitments}
+              meetingId={meeting.id}
+              employeeId={employeeId}
+            />
           </div>
         )}
 
-        {!expanded && meeting.actionItems.length > 0 && (
+        {!expanded && (meeting.actionItems.length > 0 || commitments.length > 0) && (
           <button
             onClick={() => setExpanded(true)}
             className="w-full px-5 py-2 text-xs text-gray-400 hover:text-gray-600 border-t border-gray-100 text-left hover:bg-gray-50 transition-colors"
           >
-            {meeting.actionItems.length} action item{meeting.actionItems.length !== 1 ? "s" : ""} · Click to expand
+            {meeting.actionItems.length} action item{meeting.actionItems.length !== 1 ? "s" : ""}
+            {commitments.length > 0 && ` · ${commitments.length} commitment${commitments.length !== 1 ? "s" : ""}`}
+            {" · Click to expand"}
           </button>
         )}
       </div>
